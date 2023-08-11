@@ -1,0 +1,145 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE rfc [
+        <!ENTITY nbsp    "&#160;">
+        <!ENTITY zwsp   "&#8203;">
+        <!ENTITY nbhy   "&#8209;">
+        <!ENTITY wj     "&#8288;">
+        ]>
+<?rfc toc="yes"?>
+<?rfc tocompact="yes"?>
+<?rfc tocdepth="3"?>
+<?rfc tocindent="yes"?>
+<?rfc symrefs="yes"?>
+<?rfc sortrefs="yes"?>
+<?rfc comments="no"?>
+<?rfc inline="yes"?>
+<?rfc compact="yes"?>
+<?rfc subcompact="no"?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" category="exp" docName="draft-przygienda-rift-dragonfly-00" ipr="trust200902" obsoletes=""
+     submissionType="IETF" updates="" xml:lang="en" tocInclude="true" tocDepth="3" symRefs="true" sortRefs="true" version="3">
+    <!-- xml2rfc v2v3 conversion 3.9.1 -->
+    <front>
+        <title abbrev="draft-przygienda-rift-dragonfly">
+            RIFT in Dragonfly++ Topologies
+        </title>
+        <seriesInfo name="Internet-Draft" value="draft-przygienda-rift-dragonfly-00"/>
+        <author fullname="Tony Przygienda" initials="A." surname="Przygienda" role="editor">
+            <organization>Juniper</organization>
+            <address>
+                <postal>
+                    <street>1137 Innovation Way
+                    </street>
+                    <city>Sunnyvale</city>
+                    <region>CA
+                    </region>
+                    <code/>
+                    <country>USA
+                    </country>
+                </postal>
+                <phone/>
+                <email>prz@juniper.net
+                </email>
+                <uri/>
+            </address>
+        </author>
+
+        <date year="2023"/>
+        <abstract>
+            <t>
+            </t>
+        </abstract>
+        <note>
+            <name>Requirements Language</name>
+            <t>
+                The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+                "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+                "OPTIONAL" in this document are to be interpreted as described in BCP
+                14 <xref target="RFC2119" format="default"/> <xref target="RFC8174" format="default"/> when, and only when, they appear in all
+                capitals, as shown here.
+            </t>
+        </note>
+    </front>
+    <middle>
+
+        <section toc="default" numbered="true">
+            <name>Introduction</name>
+            <t></t>
+        </section>
+
+        <section anchor="glossary" numbered="true" toc="default">
+            <name>Glossary</name>
+            <t>
+                The following terms are used in this document.
+            </t>
+            <dl newline="true" spacing="normal">
+                <dt>Horizon:</dt>
+                <dd>
+                </dd>
+
+            </dl>
+        </section>
+
+        <section numbered="true" toc="default">
+            <name>Forwarding Considerations</name>
+            <t></t>
+
+        </section>
+
+
+
+        <section anchor="sec_route_comp" numbered="true" toc="default">
+            <name>Route Computation</name>
+            <t>
+
+            </t>
+
+
+        </section>
+
+
+
+        <section anchor="patholody" numbered="true" toc="default">
+            <name>Special Considerations</name>
+            <t>
+
+            </t>
+
+        </section>
+        <section anchor="IANA" toc="default" numbered="true">
+            <name>IANA Considerations</name>
+            <t>This document requests allocation for the following RIFT codepoints.</t>
+        </section>
+        <section numbered="true" toc="default">
+            <name>Security Considerations</name>
+            <t>
+            </t>
+        </section>
+        <section numbered="true" toc="default">
+            <name>Acknowledgements</name>
+            <t>
+            </t>
+        </section>
+    </middle>
+    <back>
+        <references>
+            <name>References</name>
+            <references>
+                <name>Informative References</name>
+                <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.4271.xml"/>
+                <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.4456.xml"/>
+                <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8099.xml"/>
+
+            </references>
+            <references>
+                <name>Normative References</name>
+                <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.2119.xml"/>
+                <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.5302.xml"/>
+                <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.5304.xml"/>
+                <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7775.xml"/>
+                <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7981.xml"/>
+                <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8174.xml"/>
+                <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9012.xml"/>
+            </references>
+        </references>
+    </back>
+</rfc>
