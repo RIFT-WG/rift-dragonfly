@@ -46,6 +46,7 @@
         <date year="2023"/>
         <abstract>
             <t>
+                RIFT support for dragonfly topologies as ToF interconnect.
             </t>
         </abstract>
         <note>
@@ -63,7 +64,20 @@
 
         <section toc="default" numbered="true">
             <name>Introduction</name>
-            <t></t>
+            <t>
+                  RIFT today is limited to CLOS variant fabrics with some horizontal link exceptions. Given that
+                interconnecting multiple CLOS via a dragonfly variant is an interesting topology (whether it's a full
+                mesh or some kind of non-completely meshed regular lattice).
+
+            </t>
+
+            <figure anchor="oneplanesparsedf">
+                <name>Topologically Connected Planes</name>
+                <artset>
+                    <artwork align="center" name="" type="svg" src="svg/oneplanesparsedf.svg.prep"></artwork>
+                    <artwork align="center" name="" type="ascii-art" src="svg/oneplanesparsedf.ascii-art"></artwork>
+                </artset>
+            </figure>
         </section>
 
         <section anchor="glossary" numbered="true" toc="default">
