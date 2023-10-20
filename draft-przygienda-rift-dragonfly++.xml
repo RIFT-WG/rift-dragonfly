@@ -65,17 +65,42 @@
         <section toc="default" numbered="true">
             <name>Introduction</name>
             <t>
-                  RIFT today is limited to CLOS variant fabrics with some horizontal link exceptions. Given that
+                  RIFT today is standardized to deal with CLOS variant fabrics with some horizontal link exceptions.
+                Given that
                 interconnecting multiple CLOS via a dragonfly variant is an interesting topology (whether it's a full
-                mesh or some kind of non-completely meshed regular lattice).
+                mesh or some kind of non-completely meshed regular lattice) this document addresses the resulting
+                changes necessary to base RIFT specification to support dragonfly interconnected CLOS fabrics.
+                The reader be advised that due to complexity of figures involved the ASCII version of the document
+                leaves those out.
+                To start, <xref target="oneplanesparsedf" /> visualizes three simple single plane
+                fabrics interconnected via a DragonFly+ backbone. The behavior of standard RIFT is better understood
+                if we look at the homomorphic version of the same topology in <xref target="oneplanesparsedf_homo" />.
+                We can see that it is nothing else but a multi-plane CLOS with a lot of broken links for standard
+                RIFT. The planes consist of S_x_1 and S_x_2 ToFs in each CLOS. Given this,
+                leaf LB1 should be connected to SA1 to be in the plane and since it is not, SA1 will deduct that
+                leaf LB1 fell off the plane 1 and negatively disaggregate it. Unfortunately the same is true for
+                leaf LB1 from the view the SA2 in 2nd plane and it will negatively disaggregate it. Hence, leaf
+                LA1 will not have any possibility to forward to LB1 using standard RIFT. This points us already
+                to the first modification needed, we have to relax RIFT to forward through the horizontal
+                links on ToFs and this will be the starting point of the next section.
+
+
 
             </t>
 
             <figure anchor="oneplanesparsedf">
                 <name>Topologically Connected Planes</name>
                 <artset>
-                    <artwork align="center" name="" type="svg" src="svg/oneplanesparsedf.svg.prep"></artwork>
+                    <artwork align="center" name="" type="svg" src="prep/svg/oneplanesparsedf.svg"></artwork>
                     <artwork align="center" name="" type="ascii-art" src="svg/oneplanesparsedf.ascii-art"></artwork>
+                </artset>
+            </figure>
+
+            <figure anchor="oneplanesparsedf_homo">
+                <name>Topologically Connected Planes</name>
+                <artset>
+                    <artwork align="center" name="" type="svg" src="prep/svg/oneplanesparsedf_homomorphic.svg"></artwork>
+                    <artwork align="center" name="" type="ascii-art" src="svg/oneplanesparsedf_homomorphic.ascii-art"></artwork>
                 </artset>
             </figure>
         </section>
@@ -93,44 +118,165 @@
             </dl>
         </section>
 
-        <section numbered="true" toc="default">
-            <name>Forwarding Considerations</name>
-            <t></t>
 
-        </section>
+            <section numbered="true" toc="default">
+                <name>Horizontal Link Behavior at ToF Level</name>
+                <t>
+                Dragonfly+, being basically a multi-plane CLOS with many broken links,
+                    which we will call inter-fabric planes or IF planes to distinguish
+                    them from multi-plane within a fabric
+                    will need to change the behavior of RIFT to basically interconnect
+                    multiple distinct CLOS fabrics via horizontal links at ToF level
+                    that allow forwarding. Moreover, to deal with new mis-cabling
+                    concepts we will not consider this configuration a single
+                    fabric but a multi-fabric setup with "inter-fabric planes"
+                    and allow ToF horizontal links only
+                    to another fabric and moreover introduce
+                    forwarding through such links to
+                    distinguish those from normal "multi-plane ringing". Hence
+                    in <xref target="oneplanesparsedf_homo" /> instead of
+                    the first assumption of a single fabric we break out
+                    fabric A and fabric B and consider the links SA2-SB2 and
+                    SA1-SB1 two "inter-fabric DF+" links, in short IF-links.
+                    Those links, just like all other horizontal ToF links
+                    are considered southbound from both sides and northbound
+                    flooding rules apply, an ideal thing since with that
+                    all ToFs will see full topology of their inter-fabric
+                    plane.
 
+                </t>
 
+                <t>
+                    RIFT used in DF+ configuration will require on ToF not
+                    only a ToF flag but a fabric ID now which has to be
+                    distinct in each of the CLOS. In case of
+                    non-DF+ mode the ToF will declare such links
+                    miscabled, once enabled to be operate in DF+
+                    it will mark those links as IF-links.
+                    Given `fabric_id` is an optional schema element
+                    a ToF operating in DF+ mode will reject all
+                    links which have a ToF on the other side but
+                    no `fabric_id` value set or do not indicate
+                    DF+ mode as mis-cabled to prevent a mixture of
+                    non-DF+ and DF+ ToFs in a setup.
+                </t>
+
+            </section>
 
         <section anchor="sec_route_comp" numbered="true" toc="default">
-            <name>Route Computation</name>
+            <name>First, Simplest Route Computation Change</name>
             <t>
-
+                Now that we can detect
+                way IF-links reliably we can also remove those from the
+                computations used in negative disaggregation as
+                first step. This will prevent ToFs in fabric A
+                negatively disaggregating Fabric B prefixes, a desirable
+                behavior.
+                Not being able to forward from Fabric A to
+                fabric B is obviously a far less desirable behavior
+                and hence a ToF in DF+ mode needs to extend its route
+                computation by a special southbound DF+ computation
+                where we use SPF taking in first step all IF links
+                and the nodes behind them as candidates. This computation
+                will result in a "direct inter-fabric forwarding database"
+                with basically shortest path to prefixes in fabric B.
             </t>
+
+            <section>
+            <name>Additional Bi-Sectional Bandwidth Route Computation Change</name>
+
+            <t>
+                One of the DF+ properties is that it not only provides a direct
+                path to a destination but guarantees that destinations are reachable
+                via additional, alternate next-hop to increase the bi-sectional
+                bandwidth. In our example SB1 forwarding to LA1 can take instead
+                of SA1 directly a path through SC1 relying on it forwarding to SA1.
+                To support this we introduce an additional SPF computation which
+                takes in first 2 hops only the IF links is needed and generates
+                a "indirect inter-fabric forwarding database". We will see later
+                how those FIBs are used.
+            </t>
+            </section>
+
+            <section>
+                <name>Dragonfly with Multi-Plane CLOS Fabrics</name>
+                <t>
+
+                </t>
+            </section>
+
 
 
         </section>
 
+        <section numbered="true" toc="default">
+            <name>Forwarding Considerations</name>
+            <t>
+                Since RIFT is being extended with the concept of "indirect
+                inter-fabric next-hop" and IP packets carry not marking
+                as the path they have taken indiscriminate forwarding
+                using non-shortest paths at ToF level may loop
+                in inter fabric case. To prevent this the ToFs have
+                to maintain the concept of a "split horizon" on the
+                arriving traffic. Any traffic arriving at the ToF
+                that is targeted at the prefix within its fabric
+                can be forwarded without any further considerations.
+                On the other hand, traffic arriving at a inter-fabric
+                link MUST use a FIB which does not contain the
+                indirect inter-fabric next-hops. This will naturally
+                limit any non-shortest inter-fabric path in ToF case to
+                maximally one alternate next hop.
 
+            </t>
+        </section>
+
+
+        <section numbered="true" toc="default">
+        <name>Schema Modifications</name>
+        <t>
+            To be provided in future version of the draft in detail. Basically
+            the LIEs and Node TIEs need to be extended by fabric_id and DF+ mode
+            indication.
+        </t>
+        </section>
+
+
+
+
+        <section anchor="specialcons" numbered="true" toc="default">
+            <name>Special Considerations</name>
 
         <section anchor="patholody" numbered="true" toc="default">
-            <name>Special Considerations</name>
+            <name>Partitioning of Inter-Fabric Planes</name>
             <t>
-
+                A special case where a plane within a fabric breaks down
+                is not noticeable in another fabric and hence the traffic
+                can black hole. To detect the condition reliably
+                a ToF has to compute the inter-fabric view of
+                all the other ToFs in its own fabric and
+                take the resulting difference as
+                "inter-fabric negative disaggregation".
             </t>
 
         </section>
+        </section>
+
         <section anchor="IANA" toc="default" numbered="true">
             <name>IANA Considerations</name>
             <t>This document requests allocation for the following RIFT codepoints.</t>
+            <t>TBD</t>
         </section>
         <section numbered="true" toc="default">
             <name>Security Considerations</name>
             <t>
+                TBD
             </t>
         </section>
         <section numbered="true" toc="default">
             <name>Acknowledgements</name>
             <t>
+                Dmitry Afanasiev based on his work with BGP and DF+ provided the crucial
+                split horizon forwarding idea.
             </t>
         </section>
     </middle>

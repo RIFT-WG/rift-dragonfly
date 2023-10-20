@@ -15,7 +15,7 @@ then
 #    xmlstarlet ed -d "//svg:path/@style" | \
 #    xmlstarlet ed -d "//svg:text/@style" | \
 #    xmlstarlet ed -d "//svg:text/svg:tspan"  > $f.prep
-    svgcheck -r $f | xmlstarlet ed -d "//svg:text/@stroke" > $f.prep
+    svgcheck -a -r $f | xmlstarlet ed -d "//svg:text/@stroke" > prep/$f
     # rm $f.1
     done
 
@@ -26,7 +26,7 @@ then
   echo -- df++
 
   echo -- to text
-  xml2rfc -N $D.xml
+#  xml2rfc $D.xml
   echo -- to pdf
   xml2rfc --pdf $D.xml
 
@@ -34,6 +34,6 @@ then
   exit
 fi
 
-echo install xml2rfc and xmlstarlet
+echo install xml2rfc/xmlstarlet/svgcheck to run ...
 
 

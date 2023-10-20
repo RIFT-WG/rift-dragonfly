@@ -4,8 +4,8 @@
 
 Network Working Group                                 A. Przygienda, Ed.
 Internet-Draft                                                   Juniper
-Intended status: Experimental                            19 October 2023
-Expires: 21 April 2024
+Intended status: Experimental                            20 October 2023
+Expires: 22 April 2024
 
 
                      RIFT in Dragonfly++ Topologies
@@ -38,7 +38,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 21 April 2024.
+   This Internet-Draft will expire on 22 April 2024.
 
 Copyright Notice
 
@@ -53,7 +53,7 @@ Copyright Notice
 
 
 
-Przygienda                Expires 21 April 2024                 [Page 1]
+Przygienda                Expires 22 April 2024                 [Page 1]
 
 Internet-Draft       draft-przygienda-rift-dragonfly        October 2023
 
@@ -65,28 +65,60 @@ Internet-Draft       draft-przygienda-rift-dragonfly        October 2023
 Table of Contents
 
    1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
-   2.  Glossary  . . . . . . . . . . . . . . . . . . . . . . . . . .   2
+   2.  Glossary  . . . . . . . . . . . . . . . . . . . . . . . . . .   3
    3.  Forwarding Considerations . . . . . . . . . . . . . . . . . .   3
-   4.  Route Computation . . . . . . . . . . . . . . . . . . . . . .   3
-   5.  Special Considerations  . . . . . . . . . . . . . . . . . . .   3
-   6.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   3
-   7.  Security Considerations . . . . . . . . . . . . . . . . . . .   3
-   8.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .   3
-   9.  References  . . . . . . . . . . . . . . . . . . . . . . . . .   3
-     9.1.  Informative References  . . . . . . . . . . . . . . . . .   3
-     9.2.  Normative References  . . . . . . . . . . . . . . . . . .   3
+     3.1.  Horizontal Link Behavior at ToF Level . . . . . . . . . .   3
+   4.  Schema Modifications  . . . . . . . . . . . . . . . . . . . .   3
+   5.  Route Computation . . . . . . . . . . . . . . . . . . . . . .   3
+   6.  Special Considerations  . . . . . . . . . . . . . . . . . . .   3
+   7.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   3
+   8.  Security Considerations . . . . . . . . . . . . . . . . . . .   3
+   9.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .   3
+   10. References  . . . . . . . . . . . . . . . . . . . . . . . . .   3
+     10.1.  Informative References . . . . . . . . . . . . . . . . .   3
+     10.2.  Normative References . . . . . . . . . . . . . . . . . .   4
    Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .   4
 
 1.  Introduction
 
-   RIFT today is limited to CLOS variant fabrics with some horizontal
-   link exceptions.  Given that interconnecting multiple CLOS via a
-   dragonfly variant is an interesting topology (whether it's a full
-   mesh or some kind of non-completely meshed regular lattice).
+   RIFT today is standardized to deal with CLOS variant fabrics with
+   some horizontal link exceptions.  Given that interconnecting multiple
+   CLOS via a dragonfly variant is an interesting topology (whether it's
+   a full mesh or some kind of non-completely meshed regular lattice)
+   this document addresses the resulting changes necessary to base RIFT
+   specification to support dragonfly interconnected CLOS fabrics.  The
+   reader be advised that due to complexity of figures involved the
+   ASCII version of the document leaves those out.  To start, Figure 1
+   visualizes three simple single plane fabrics interconnected via a
+   DragonFly+ backbone.  The behavior of standard RIFT is better
+   understood if we look at the homomorphic version of the same topology
+   in Figure 2.  We can see that it is nothing else but a multi-plane
+   CLOS with a lot of broken links for standard RIFT.  The planes
+   consist of S_x_1 and S_x_2 ToFs in each CLOS.  Given this, leaf LB1
+   should be connected to SA1 to be in the plane and since it is not,
+   SA1 will deduct that leaf LB1 fell off the plane 1 and negatively
+   disaggregate it.  Unfortunately the same is true for leaf LB1 from
+   the view the SA2 in 2nd plane and it will negatively disaggregate it.
+   Hence leaf LA1 will not have any possiblity to forward to LB1 using
+   standard RIFT.  This points us already to the first modification
+   needed, we have to relax RIFT to forward through the horizontal links
+   on ToFs and this will be the starting point of the next section.
 
             [[ Sparse DF Topology, Refer to PDF for Picture ]]
 
+
+
+
+Przygienda                Expires 22 April 2024                 [Page 2]
+
+Internet-Draft       draft-przygienda-rift-dragonfly        October 2023
+
+
                   Figure 1: Topologically Connected Planes
+
+[[ Sparse DF Topology Homomorphism to multiplane CLOS, Refer to PDF for Picture ]]
+
+               Figure 2: Topologically Connected Planes
 
 2.  Glossary
 
@@ -94,53 +126,49 @@ Table of Contents
 
    Horizon:
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Przygienda                Expires 21 April 2024                 [Page 2]
-
-Internet-Draft       draft-przygienda-rift-dragonfly        October 2023
-
-
 3.  Forwarding Considerations
 
+3.1.  Horizontal Link Behavior at ToF Level
 
-4.  Route Computation
+   Dragonfly+, being basically a multiplane CLOS with many broken links
+   will need to change the behavior of RIFT
+
+4.  Schema Modifications
 
 
-5.  Special Considerations
+5.  Route Computation
 
 
-6.  IANA Considerations
+6.  Special Considerations
+
+
+7.  IANA Considerations
 
    This document requests allocation for the following RIFT codepoints.
 
-7.  Security Considerations
+8.  Security Considerations
 
 
-8.  Acknowledgements
+9.  Acknowledgements
 
 
-9.  References
+10.  References
 
-9.1.  Informative References
+10.1.  Informative References
 
    [RFC4271]  Rekhter, Y., Ed., Li, T., Ed., and S. Hares, Ed., "A
               Border Gateway Protocol 4 (BGP-4)", RFC 4271,
               DOI 10.17487/RFC4271, January 2006,
               <https://www.rfc-editor.org/info/rfc4271>.
+
+
+
+
+
+Przygienda                Expires 22 April 2024                 [Page 3]
+
+Internet-Draft       draft-przygienda-rift-dragonfly        October 2023
+
 
    [RFC4456]  Bates, T., Chen, E., and R. Chandra, "BGP Route
               Reflection: An Alternative to Full Mesh Internal BGP
@@ -152,23 +180,12 @@ Internet-Draft       draft-przygienda-rift-dragonfly        October 2023
               DOI 10.17487/RFC8099, February 2017,
               <https://www.rfc-editor.org/info/rfc8099>.
 
-9.2.  Normative References
+10.2.  Normative References
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
               DOI 10.17487/RFC2119, March 1997,
               <https://www.rfc-editor.org/info/rfc2119>.
-
-
-
-
-
-
-
-Przygienda                Expires 21 April 2024                 [Page 3]
-
-Internet-Draft       draft-przygienda-rift-dragonfly        October 2023
-
 
    [RFC5302]  Li, T., Smit, H., and T. Przygienda, "Domain-Wide Prefix
               Distribution with Two-Level IS-IS", RFC 5302,
@@ -200,6 +217,15 @@ Internet-Draft       draft-przygienda-rift-dragonfly        October 2023
 
 Author's Address
 
+
+
+
+
+Przygienda                Expires 22 April 2024                 [Page 4]
+
+Internet-Draft       draft-przygienda-rift-dragonfly        October 2023
+
+
    Tony Przygienda (editor)
    Juniper
    1137 Innovation Way
@@ -221,4 +247,34 @@ Author's Address
 
 
 
-Przygienda                Expires 21 April 2024                 [Page 4]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Przygienda                Expires 22 April 2024                 [Page 5]
