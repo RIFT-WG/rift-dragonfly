@@ -26,7 +26,7 @@ then
   echo -- df++
 
   echo -- to text
-#  xml2rfc $D.xml
+  xml2rfc $D.xml
   echo -- to pdf
   xml2rfc --pdf $D.xml
 
