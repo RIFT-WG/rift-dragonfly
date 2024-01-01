@@ -15,14 +15,14 @@
 <?rfc inline="yes"?>
 <?rfc compact="yes"?>
 <?rfc subcompact="no"?>
-<rfc xmlns:xi="http://www.w3.org/2001/XInclude" category="exp" docName="draft-przygienda-rift-dragonfly-00" ipr="trust200902" obsoletes=""
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" category="exp" docName="draft-przygienda-rift-dragonfly-01" ipr="trust200902" obsoletes=""
      submissionType="IETF" updates="" xml:lang="en" tocInclude="true" tocDepth="3" symRefs="true" sortRefs="true" version="3">
     <!-- xml2rfc v2v3 conversion 3.9.1 -->
     <front>
         <title abbrev="draft-przygienda-rift-dragonfly">
             RIFT in Dragonfly Topologies
         </title>
-        <seriesInfo name="Internet-Draft" value="draft-przygienda-rift-dragonfly-00"/>
+        <seriesInfo name="Internet-Draft" value="draft-przygienda-rift-dragonfly-01"/>
         <author fullname="Tony Przygienda" initials="A." surname="Przygienda" role="editor">
             <organization>Juniper</organization>
             <address>
@@ -43,7 +43,7 @@
             </address>
         </author>
 
-        <date year="2023"/>
+        <date year="2024"/>
         <abstract>
             <t>
                 RIFT extensions for dragonfly topologies.
@@ -397,6 +397,7 @@
                 Dmitry Afanasiev's ideas around his work with BGP and dragonfly started interesting discussions,
                 and he provided the crucial
                 split horizon forwarding idea. Jeff Tantsura encouraged the work from its initial conception.
+                Many thanks to Benson Muite for ASCII figures.
             </t>
         </section>
     </middle>

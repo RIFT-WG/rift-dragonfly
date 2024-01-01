@@ -4,12 +4,12 @@
 
 Network Working Group                                 A. Przygienda, Ed.
 Internet-Draft                                                   Juniper
-Intended status: Experimental                            22 October 2023
-Expires: 24 April 2024
+Intended status: Experimental                             1 January 2024
+Expires: 4 July 2024
 
 
                       RIFT in Dragonfly Topologies
-                   draft-przygienda-rift-dragonfly-00
+                   draft-przygienda-rift-dragonfly-01
 
 Abstract
 
@@ -38,11 +38,11 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 24 April 2024.
+   This Internet-Draft will expire on 4 July 2024.
 
 Copyright Notice
 
-   Copyright (c) 2023 IETF Trust and the persons identified as the
+   Copyright (c) 2024 IETF Trust and the persons identified as the
    document authors.  All rights reserved.
 
    This document is subject to BCP 78 and the IETF Trust's Legal
@@ -53,9 +53,9 @@ Copyright Notice
 
 
 
-Przygienda                Expires 24 April 2024                 [Page 1]
+Przygienda                 Expires 4 July 2024                  [Page 1]
 
-Internet-Draft       draft-przygienda-rift-dragonfly        October 2023
+Internet-Draft       draft-przygienda-rift-dragonfly        January 2024
 
 
    extracted from this document must include Revised BSD License text as
@@ -65,23 +65,23 @@ Internet-Draft       draft-przygienda-rift-dragonfly        October 2023
 Table of Contents
 
    1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
-   2.  Glossary  . . . . . . . . . . . . . . . . . . . . . . . . . .   3
-   3.  Horizontal Link Behavior at ToF Level . . . . . . . . . . . .   4
-   4.  First Route Computation Change  . . . . . . . . . . . . . . .   4
+   2.  Glossary  . . . . . . . . . . . . . . . . . . . . . . . . . .   4
+   3.  Horizontal Link Behavior at ToF Level . . . . . . . . . . . .   5
+   4.  First Route Computation Change  . . . . . . . . . . . . . . .   6
      4.1.  Additional Bi-Sectional Bandwidth Route Computation
-           Change  . . . . . . . . . . . . . . . . . . . . . . . . .   5
-     4.2.  Dragonfly with Multi-Plane CLOS Fabrics . . . . . . . . .   5
-   5.  Forwarding Considerations . . . . . . . . . . . . . . . . . .   6
-   6.  Partitioning of inter Fabric Planes . . . . . . . . . . . . .   6
-   7.  Specification . . . . . . . . . . . . . . . . . . . . . . . .   6
-   8.  Summary Overview  . . . . . . . . . . . . . . . . . . . . . .   7
-   9.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   7
-   10. Security Considerations . . . . . . . . . . . . . . . . . . .   7
-   11. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .   7
-   12. References  . . . . . . . . . . . . . . . . . . . . . . . . .   7
-     12.1.  Informative References . . . . . . . . . . . . . . . . .   7
-     12.2.  Normative References . . . . . . . . . . . . . . . . . .   7
-   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .   8
+           Change  . . . . . . . . . . . . . . . . . . . . . . . . .   6
+     4.2.  Dragonfly with Multi-Plane CLOS Fabrics . . . . . . . . .   6
+   5.  Forwarding Considerations . . . . . . . . . . . . . . . . . .   9
+   6.  Partitioning of inter Fabric Planes . . . . . . . . . . . . .   9
+   7.  Specification . . . . . . . . . . . . . . . . . . . . . . . .   9
+   8.  Summary Overview  . . . . . . . . . . . . . . . . . . . . . .  10
+   9.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  10
+   10. Security Considerations . . . . . . . . . . . . . . . . . . .  10
+   11. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  10
+   12. References  . . . . . . . . . . . . . . . . . . . . . . . . .  10
+     12.1.  Informative References . . . . . . . . . . . . . . . . .  10
+     12.2.  Normative References . . . . . . . . . . . . . . . . . .  10
+   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .  11
 
 1.  Introduction
 
@@ -94,8 +94,51 @@ Table of Contents
    reader is advised that due to complexity of figures involved the
    ASCII version of the document leaves those out.
 
-                      [[ Sparse DF Topology,
-                         Refer to PDF for Picture ]]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Przygienda                 Expires 4 July 2024                  [Page 2]
+
+Internet-Draft       draft-przygienda-rift-dragonfly        January 2024
+
+
+     +-----+   +-----+                              +-----+   +-----+
+     | LA1 |   |     |                              |     |   |     |
+     +-----+   +-----+                              +-----+   +-----+
+        |   \ /   |                                    |   \ /   |
+        |    X    |                                    |    X    |
+        |   / \   |                                    |   / \   |
+     +-----+   +-----+                              +-----+   +-----+
+     | SA1 |   | SA2 |                              | SC1 |   | SC2 |
+     +-----+   +-----+                              +-----+   +-----+
+       | |       | |                                 | |        | |
+       | +-------|-|----------------------+          | |        | |
+       +---------|-|----------------------+----------+ |        | |
+                 | |                      | +----------+        | |
+                 | +----------------------|-|-------------------+ |
+                 +--------------+ +-------|-|---------------------+
+                                | |       | |
+                              +-----+   +-----+
+                              | SB2 |   | SB1 |
+                              +-----+   +-----+
+                                     \ /
+                                      X
+                                     / \
+                              +-----+   +-----+
+                              |     |   | LB1 |
+                              +-----+   +-----+
 
                  Figure 1: Sparse Dragonfly of CLOS Fabrics
 
@@ -106,14 +149,6 @@ Table of Contents
    but a multi-plane CLOS with a lot of broken links for standard RIFT.
    The planes consist of S_x_1 and S_x_2 ToFs in each CLOS.  Given this,
    leaf LB1 should be connected to SA1 to be in the plane and since it
-
-
-
-Przygienda                Expires 24 April 2024                 [Page 2]
-
-Internet-Draft       draft-przygienda-rift-dragonfly        October 2023
-
-
    is not, SA1 will deduct that leaf LB1 fell off the plane 1 and
    negatively disaggregate it.  Unfortunately the same is true for leaf
    LB1 from the view the SA2 in 2nd plane and it will negatively
@@ -123,8 +158,37 @@ Internet-Draft       draft-przygienda-rift-dragonfly        October 2023
    we have to relax RIFT to forward through the horizontal links on ToFs
    and this will be the starting point of the next section.
 
-          [[ Sparse DF Topology Homomorphism to multiplane CLOS,
-             Refer to PDF for Picture ]]
+
+
+
+
+
+
+
+Przygienda                 Expires 4 July 2024                  [Page 3]
+
+Internet-Draft       draft-przygienda-rift-dragonfly        January 2024
+
+
+           Fabric A              Fabric B
+     *********************  *********************
+     *                   *  *                   *
+     *                 +-*--*-----------+     +-*--------------+
+     *       +---------|-*--*-+     +---|-----|-*----------|   |
+     *       |         | *  * |     |   |     | *          |   |
+     * +-----+   +-----+ *  * +-----+   +-----+ *    +-----+   +-----+
+     * | SA2 |   | SA1 | *  * | SB2 |   | SB1 | *    |     |   |     |
+     * +-----+   +-----+ *  * +-----+   +-----+ *    +-----+   +-----+
+     * |  |  \   /  |  | *  *    |  \   /  |    *    |  |  \   /  |  |
+     * +--|---\-/---|--|-*--*----|---\-/---|----*----+  |   \ /   |  |
+     *    |    X    |  +-*--*----|----X----|----*-------|----X----|--+
+     *    |   / \   |    *  *    |   / \   |    *       |   / \   |
+     * +-----+   +-----+ *  * +-----+   +-----+ *    +-----+   +-----+
+     * |     |   | LA1 | *  * |     |   | LB1 | *    |     |   |     |
+     * +-----+   +-----+ *  * +-----+   +-----+ *    +-----+   +-----+
+     *                   *  *                   *
+     *                   *  *                   *
+     *********************  *********************
 
     Figure 2: Homomorphic View of Sparse Dragonfly as a Multi-Plane CLOS
 
@@ -150,25 +214,23 @@ Internet-Draft       draft-przygienda-rift-dragonfly        October 2023
    Inter Fabric link or IF links:
       A horizontal ToF link between two fabrics.
 
+
+
+
+
+
+
+
+Przygienda                 Expires 4 July 2024                  [Page 4]
+
+Internet-Draft       draft-przygienda-rift-dragonfly        January 2024
+
+
    Alternate Next Hop:
       A next hop through an IF interface that does not represent the
       shortest path through the inter fabric horizon but necessitates
       the receiving node to use the next hop on the shortest path to the
       destination fabric (direct next hop).
-
-
-
-
-
-
-
-
-
-
-Przygienda                Expires 24 April 2024                 [Page 3]
-
-Internet-Draft       draft-przygienda-rift-dragonfly        October 2023
-
 
 3.  Horizontal Link Behavior at ToF Level
 
@@ -205,6 +267,21 @@ Internet-Draft       draft-przygienda-rift-dragonfly        October 2023
    hand, a ToF indicating DF+ capability and showing matching fabric id
    is clearly a normal horizontal multi plane ring in the same fabric.
 
+
+
+
+
+
+
+
+
+
+
+Przygienda                 Expires 4 July 2024                  [Page 5]
+
+Internet-Draft       draft-przygienda-rift-dragonfly        January 2024
+
+
 4.  First Route Computation Change
 
    Now that we can detect IF links reliably we can also remove those
@@ -218,14 +295,6 @@ Internet-Draft       draft-przygienda-rift-dragonfly        October 2023
    computation will result in a "direct inter fabric forwarding
    database" containing amongst others shortest path to prefixes in
    fabric B or in other words, direct inter fabric next hops.  Section 5
-
-
-
-Przygienda                Expires 24 April 2024                 [Page 4]
-
-Internet-Draft       draft-przygienda-rift-dragonfly        October 2023
-
-
    will expound further how that database is used.
 
 4.1.  Additional Bi-Sectional Bandwidth Route Computation Change
@@ -261,26 +330,127 @@ Internet-Draft       draft-przygienda-rift-dragonfly        October 2023
    provisioned is outside the specification here but it will necessitate
    basically flat distribution of the loopbacks of the ToFs across whole
    fabric via e.g. redistribution of some RIFT routes in northbound and
+
+
+
+Przygienda                 Expires 4 July 2024                  [Page 6]
+
+Internet-Draft       draft-przygienda-rift-dragonfly        January 2024
+
+
    southbound direction or an equivalent scheme.
 
-    [[ Sparse DF Topology Homomorphism to multiplane multi fabric CLOS,
-       Refer to PDF for Picture ]]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Przygienda                 Expires 4 July 2024                  [Page 7]
+
+Internet-Draft       draft-przygienda-rift-dragonfly        January 2024
+
+
+                 Fabric A
+               *******************************************
+               *                                         *
+               *  +-----+   +-----+   +-----+   +-----+  *
+               *  |     |   |     |   |     |   |     |  *
+               *  +-----+   +-----+   +-----+   +-----+  *
+               *     |   \ /   |         |   \ /   |     *
+               *     |    X    |         |    X    |     *
+               *     |   / \   |         |   / \   |     *
+               *  +-----+   +-----+   +-----+   +-----+  *
+               *  |     |   |     |   |     |   |     |  *
+               *  +-----+   +-----+   +-----+   +-----+  *
+               *         \         \ /         /         *
+               *          \         X         /          *
+               *   +-------\---+   / \   +---/---------+ *
+               *   |        +-----+   +-----+          | *
+               *   |    +---| SA2 |   | SA1 |---+      | *
+               *   |    |   +-----+   +-----+   |      | *
+               *   |    |      |         |      | r_A  | *
+               *   |    +------|---------|------+      | *
+               *   |           |         |             | *
+               ****|***********|*********|*************|**
+                   |           |         |             |
+              IR_2 |           |         |             | IR_1
+                   |           |         |             |
+               ****|***********|*********|*************|**
+               *   |           |         |             | *
+               *   |    +------|---------|------+      | *
+               *   |    |      |         |      | r_B  | *
+               *   |    |   +-----+   +-----+   |      | *
+               *   |    +---| SB2 |   | SB1 |---+      | *
+               *   |        +-----+   +-----+          | *
+               *   +-------/---+   \ /   +---\---------+ *
+               *          /         X         \          *
+               *         /         / \         \         *
+               *  +-----+   +-----+   +-----+   +-----+  *
+               *  |     |   |     |   |     |   |     |  *
+               *  +-----+   +-----+   +-----+   +-----+  *
+               *     |   \ /   |         |   \ /   |     *
+               *     |    X    |         |    X    |     *
+               *     |   / \   |         |   / \   |     *
+               *  +-----+   +-----+   +-----+   +-----+  *
+               *  |     |   |     |   |     |   |     |  *
+               *  +-----+   +-----+   +-----+   +-----+  *
+               *                                         *
+               *******************************************
+                 Fabric B
+
+
+
+
+Przygienda                 Expires 4 July 2024                  [Page 8]
+
+Internet-Draft       draft-przygienda-rift-dragonfly        January 2024
+
 
       Figure 3: Multi-Plane CLOS Fabrics Connected in Sparse Dragonfly
-
-
-
-
-
-
-
-
-
-
-Przygienda                Expires 24 April 2024                 [Page 5]
-
-Internet-Draft       draft-przygienda-rift-dragonfly        October 2023
-
 
 5.  Forwarding Considerations
 
@@ -331,11 +501,9 @@ Internet-Draft       draft-przygienda-rift-dragonfly        October 2023
 
 
 
-
-
-Przygienda                Expires 24 April 2024                 [Page 6]
+Przygienda                 Expires 4 July 2024                  [Page 9]
 
-Internet-Draft       draft-przygienda-rift-dragonfly        October 2023
+Internet-Draft       draft-przygienda-rift-dragonfly        January 2024
 
 
 8.  Summary Overview
@@ -374,7 +542,7 @@ Internet-Draft       draft-przygienda-rift-dragonfly        October 2023
    Dmitry Afanasiev's ideas around his work with BGP and dragonfly
    started interesting discussions, and he provided the crucial split
    horizon forwarding idea.  Jeff Tantsura encouraged the work from its
-   initial conception.
+   initial conception.  Many thanks to Benson Muite for ASCII figures.
 
 12.  References
 
@@ -389,9 +557,9 @@ Internet-Draft       draft-przygienda-rift-dragonfly        October 2023
 
 
 
-Przygienda                Expires 24 April 2024                 [Page 7]
+Przygienda                 Expires 4 July 2024                 [Page 10]
 
-Internet-Draft       draft-przygienda-rift-dragonfly        October 2023
+Internet-Draft       draft-przygienda-rift-dragonfly        January 2024
 
 
    [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
@@ -445,4 +613,4 @@ Author's Address
 
 
 
-Przygienda                Expires 24 April 2024                 [Page 8]
+Przygienda                 Expires 4 July 2024                 [Page 11]
