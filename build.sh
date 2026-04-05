@@ -1,5 +1,9 @@
 #!/bin/bash
 
+set -x
+
+mkdir -p prep/svg
+
 if [ `which xmlstarlet` -a `which xml2rfc` -a `which svgcheck` ]
 then
 
@@ -31,13 +35,16 @@ then
   echo -- df++
 
   echo -- to text
-  xml2rfc $D.xml
+  xml2rfc  --allow-local-file-access  $D.xml
   echo -- to pdf
-  xml2rfc --pdf $D.xml
-  xml2rfc --expand $D.xml
+  xml2rfc  --allow-local-file-access  --pdf $D.xml
+  xml2rfc  --allow-local-file-access  --expand $D.xml
 
   nl -ba $D.txt > $D.nl.txt
   exit
+else
+  echo missing things ...
+  exit 1
 fi
 
 echo install xml2rfc/xmlstarlet/svgcheck to run ...

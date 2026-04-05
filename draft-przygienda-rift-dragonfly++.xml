@@ -15,16 +15,16 @@
 <?rfc inline="yes"?>
 <?rfc compact="yes"?>
 <?rfc subcompact="no"?>
-<rfc xmlns:xi="http://www.w3.org/2001/XInclude" category="exp" docName="draft-przygienda-rift-dragonfly-01" ipr="trust200902" obsoletes=""
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" category="exp" docName="draft-przygienda-rift-dragonfly-02" ipr="trust200902" obsoletes=""
      submissionType="IETF" updates="" xml:lang="en" tocInclude="true" tocDepth="3" symRefs="true" sortRefs="true" version="3">
     <!-- xml2rfc v2v3 conversion 3.9.1 -->
     <front>
         <title abbrev="draft-przygienda-rift-dragonfly">
             RIFT in Dragonfly Topologies
         </title>
-        <seriesInfo name="Internet-Draft" value="draft-przygienda-rift-dragonfly-01"/>
+        <seriesInfo name="Internet-Draft" value="draft-przygienda-rift-dragonfly-02"/>
         <author fullname="Tony Przygienda" initials="A." surname="Przygienda" role="editor">
-            <organization>Juniper</organization>
+            <organization>HPE Juniper Networking</organization>
             <address>
                 <postal>
                     <street>1137 Innovation Way
@@ -43,7 +43,7 @@
             </address>
         </author>
 
-        <date year="2024"/>
+        <date year="2026"/>
         <abstract>
             <t>
                 RIFT extensions for dragonfly topologies.
@@ -69,11 +69,11 @@
             <t>
                   RIFT today is standardized to deal with CLOS variant fabrics with some horizontal link exceptions.
                 Given that
-                interconnecting multiple CLOS via a dragonfly variant is an interesting topology (whether it's a full
+                interconnecting multiple CLOS via a dragonfly and its variants is an interesting topology (whether it's a full
                 mesh or some kind of non-completely meshed regular lattice) this document addresses the resulting
                 changes necessary to base RIFT specification to support dragonfly interconnected CLOS fabrics.
                 The reader is advised that due to complexity of figures involved the ASCII version of the document
-                leaves those out.
+                may present those in simplified fashion.
 
                 </t>
 
@@ -131,19 +131,19 @@
                     to support
                     alternate next hop when routing between fabrics.
                 </dd>
-                <dt>Inter Fabric Planes or IF-planes:</dt>
+                <dt>Inter Fabric Planes or IFL-planes:</dt>
                 <dd>
                     Multi-Plane that spans multiple fabrics.
                 </dd>
-                <dt>Inter Fabric link or IF links:</dt>
+                <dt>Inter Fabric link or IFL links:</dt>
                 <dd>
                     A horizontal ToF link between two fabrics.
                 </dd>
-                <dt>Alternate Next Hop:</dt>
+                <dt>K-Alternate Next Hops or KNHs:</dt>
                 <dd>
-                    A next hop through an IF interface that does not represent the shortest path
-                    through the inter fabric horizon but necessitates the receiving node to
-                    use the next hop on the shortest path to the destination fabric (direct next hop).
+                    Next hop used by the originating fabric on a k-shortest path to the destination fabric.
+                    The receiver on the other side must subsequently
+                    use as next hop shortest path next hop to the destination fabric.
                 </dd>
 
 
@@ -156,7 +156,7 @@
                 <t>
                 Dragonfly+, being basically, when seen a single fabric,
                     a multi-plane CLOS with many broken links
-                    (which we will call inter fabric planes or IF planes to distinguish
+                    (which we will call inter fabric planes or IFL planes to distinguish
                     them from multi-plane within a fabric later)
                     will somehow need to change the behavior of RIFT to allow
                     forwarding via horizontal links at ToF level lest we end up
@@ -177,8 +177,8 @@
                     the first assumption of a single fabric we break out
                     fabric A and fabric B and consider the links SA2-SB2 and
                     SA1-SB1 as two "inter fabric DF+" links, or in short, as already
-                    introduced, IF links.
-                    And fortunately enough, IF links, just like all other horizontal ToF links,
+                    introduced, IFL links.
+                    And fortunately enough, IFL links, just like all other horizontal ToF links,
                     are considered northbound from both sides and northbound
                     flooding rules apply, an ideal thing since with that
                      ToFs will see full topology of their inter fabric
@@ -189,10 +189,10 @@
                 <t>
                     RIFT used in such DF+ configuration will require on ToF not
                     only a DF+ capability flag but a fabric ID now which has to be
-                    distinct in each of the CLOS. In case of
+                    distinct in each of the CLOS or dragonfly cliques. In case of
                     non-DF+ mode a ToF will declare such links
                     miscabled, once enabled to operate in DF+
-                    it will mark those links as IF links.
+                    it will mark those links as IFL links.
                     Given `fabric_id` is an optional schema element
                     a ToF operating in DF+ mode will reject all
                     links to other ToFs without
@@ -210,7 +210,7 @@
             <name>First Route Computation Change</name>
             <t>
                 Now that we can detect
-                 IF links reliably we can also remove those from the
+                 IFL links reliably we can also remove those from the
                 computations used in negative disaggregation as
                 first step. This will prevent ToFs in fabric A
                 negatively disaggregating Fabric B prefixes, a desirable
@@ -219,7 +219,7 @@
                 fabric B is obviously a far less desirable behavior
                 and hence a ToF in DF+ mode needs to extend its route
                 computation by a special southbound DF+ computation
-                where we use SPF taking in first step all IF links
+                where we use SPF taking in first step all IFL links
                 and the nodes behind them as candidates. This computation
                 will result in a "direct inter fabric forwarding database"
                 containing amongst others shortest path to prefixes in fabric B or
@@ -227,23 +227,43 @@
                 further how that database is used.
             </t>
 
-            <section>
+            <section anchor="computation">
             <name>Additional Bi-Sectional Bandwidth Route Computation Change</name>
 
             <t>
                 One of the DF+ properties is that it not only provides a direct
                 path to a destination but guarantees that destinations are reachable
-                via additional, alternate next hop to increase the bi-sectional
-                bandwidth. In our example SB1 forwarding to LA1 can take instead
+                via KNHs to increase the bi-sectional
+                bandwidth. In our first simple example SB1 forwarding to LA1 can take instead
                 of SA1 directly a path through SC1 relying on it forwarding to SA1.
                 To support this we introduce an additional SPF computation which
-                takes in first 2 iterations only  IF links  and generates
-                a "indirect inter fabric forwarding database". <xref  target="fwd"/> will expound
-                further how that database is used.
+                computes for each IFL interface a k-shortest-path whereas K should
+                be obviously reasonable constrained. To illustrate this by an example
+                <xref target="sparse_17"/> introduces a 17 fabrics rather sparse dragonfly
+                mesh where a 3 hops alternate paths are viable (if so chosen). FID 0
+                forwarding to FID 2 has obviously the shortest path via FID1 but
+                a k-shortest path computation will yield FID 13 and FID 16 as viable
+                3 hops k-shortest-paths. However, only the originating fabric can
+                choose a k-shortest path and every subsequent non originator MUST
+                follow equal cost shortest paths to prevent looping or excessive
+                bow-tying through the fabric. The picture does not visualize the
+                full path diversity since FID 13 can viably choose FIDs 3, 6, 9 beside
+                FID 12 as shortest path next hops providing very signficant
+                path diversity.
+
+
+                <figure anchor="sparse_17">
+                    <name>Multi-Plane CLOS Fabrics Connected in Sparse Dragonfly</name>
+                    <artset>
+                        <artwork align="center" name="" type="svg" src="prep/svg/mesh_17_every_3th_neighbor.svg"></artwork>
+                        <artwork align="center" name="" type="ascii-art" src="svg/missing.ascii-art"></artwork>
+                    </artset>
+                </figure>
+
             </t>
 
                 <t>Computing such alternate next hops will have the other beneficial
-                effect of actually providing a backup path in case the direct IF plane
+                effect of actually providing a backup path in case the direct IFL plane
                 link to another fabric becomes unavailable.</t>
             </section>
 
@@ -285,8 +305,8 @@
         <section numbered="true" toc="default" anchor="fwd">
             <name>Forwarding Considerations</name>
             <t>
-                Since RIFT is being extended with the concept of "indirect
-                inter fabric next hop" and IP packets do not carry any marking
+                Since RIFT is being extended with the concept of KNH
+                and IP packets do not carry any marking
                 as the path they have taken indiscriminate forwarding
                 using non-shortest paths at ToF level may loop
                 in inter fabric case. To prevent this the ToFs have
@@ -295,13 +315,10 @@
                 that is targeted at the prefix within its fabric
                 can be forwarded without any further considerations.
                 On the other hand, traffic arriving at a inter fabric
-                link MUST use a FIB which does not contain the
-                indirect inter fabric next hops and hence the FIB
-                used to forward traffic on the IF inter faces MUST NOT
-                include the results of indirect next hop computation.
+                link MUST use a FIB generated by <xref target="computation"/>.
                 The solution will naturally
                 limit any non-shortest inter fabric path in ToF case to
-                maximally one alternate next hop. Observe that
+                k-shortest paths. Observe that
                 per inter face specific FIB is nothing particularly
                 special, any technology supporting VPN or trunking
                 today is already capable of provisioning inter face
@@ -311,15 +328,15 @@
         </section>
 
 
-        <section anchor="patholody" numbered="true" toc="default">
+        <section anchor="pathology" numbered="true" toc="default">
             <name>Partitioning of inter Fabric Planes</name>
             <t>
                 A special case where a plane within a remote fabric breaks down
                 is not noticeable in another fabric and hence the traffic
-                can black hole since we do suppress the IF links
+                can black hole since we do suppress the IFL links
                 during negative disaggregation normally. To detect the condition reliably
                 a ToF has to compute the inter fabric view of
-                all the other ToFs in its own fabric while including IF links
+                all the other ToFs in its own fabric while including IFL links
                 and
                 consider the resulting difference as
                 "inter fabric negative disaggregation". This is possible
@@ -328,7 +345,7 @@
                 even when the fabric is a single plane fabric it must be
                 then ringed at ToF level since otherwise the ToFs do not
                 see the inter fabric planes they are not part of as
-                an IF ring.
+                an IFL ring.
             </t>
 
             <t>
@@ -360,10 +377,10 @@
 </t>
             <t>
                 We see three fabrics, each of them multi-plane (though mixes are absolutely possible as long
-                the number of ToFs connected to dragonfly are kept the same). The fat links represent the "IF horizon", i.e.
+                the number of ToFs connected to dragonfly are kept the same). The fat links represent the "IFL horizon", i.e.
                 any traffic coming from those links cannot use alternate next hops to the destination. In this
                 example traffic from LA11 going through PA11 and SA2 towards LC11 is given two choices of next hops,
-                either SC2 or SB2. Now that it entered the IF horizon in case SB2 receives it no further alternate
+                either SC2 or SB2. Now that it entered the IFL horizon in case SB2 receives it no further alternate
                 next hops will be used but traffic will be handed off to SC2 which applies the same rule and in
                 this case actually forwards the traffic into the fabric.
             </t>

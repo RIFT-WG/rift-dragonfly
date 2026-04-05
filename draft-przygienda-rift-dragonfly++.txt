@@ -3,13 +3,13 @@
 
 
 Network Working Group                                 A. Przygienda, Ed.
-Internet-Draft                                                   Juniper
-Intended status: Experimental                             1 January 2024
-Expires: 4 July 2024
+Internet-Draft                                    HPE Juniper Networking
+Intended status: Experimental                               2 April 2026
+Expires: 4 October 2026
 
 
                       RIFT in Dragonfly Topologies
-                   draft-przygienda-rift-dragonfly-01
+                   draft-przygienda-rift-dragonfly-02
 
 Abstract
 
@@ -38,11 +38,11 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 4 July 2024.
+   This Internet-Draft will expire on 4 October 2026.
 
 Copyright Notice
 
-   Copyright (c) 2024 IETF Trust and the persons identified as the
+   Copyright (c) 2026 IETF Trust and the persons identified as the
    document authors.  All rights reserved.
 
    This document is subject to BCP 78 and the IETF Trust's Legal
@@ -53,9 +53,9 @@ Copyright Notice
 
 
 
-Przygienda                 Expires 4 July 2024                  [Page 1]
+Przygienda               Expires 4 October 2026                 [Page 1]
 
-Internet-Draft       draft-przygienda-rift-dragonfly        January 2024
+Internet-Draft       draft-przygienda-rift-dragonfly          April 2026
 
 
    extracted from this document must include Revised BSD License text as
@@ -109,9 +109,9 @@ Table of Contents
 
 
 
-Przygienda                 Expires 4 July 2024                  [Page 2]
+Przygienda               Expires 4 October 2026                 [Page 2]
 
-Internet-Draft       draft-przygienda-rift-dragonfly        January 2024
+Internet-Draft       draft-przygienda-rift-dragonfly          April 2026
 
 
      +-----+   +-----+                              +-----+   +-----+
@@ -165,9 +165,9 @@ Internet-Draft       draft-przygienda-rift-dragonfly        January 2024
 
 
 
-Przygienda                 Expires 4 July 2024                  [Page 3]
+Przygienda               Expires 4 October 2026                 [Page 3]
 
-Internet-Draft       draft-przygienda-rift-dragonfly        January 2024
+Internet-Draft       draft-przygienda-rift-dragonfly          April 2026
 
 
            Fabric A              Fabric B
@@ -211,7 +211,7 @@ Internet-Draft       draft-przygienda-rift-dragonfly        January 2024
    Inter Fabric Planes or IF-planes:
       Multi-Plane that spans multiple fabrics.
 
-   Inter Fabric link or IF links:
+   Inter Fabric link or IFL links:
       A horizontal ToF link between two fabrics.
 
 
@@ -221,13 +221,13 @@ Internet-Draft       draft-przygienda-rift-dragonfly        January 2024
 
 
 
-Przygienda                 Expires 4 July 2024                  [Page 4]
+Przygienda               Expires 4 October 2026                 [Page 4]
 
-Internet-Draft       draft-przygienda-rift-dragonfly        January 2024
+Internet-Draft       draft-przygienda-rift-dragonfly          April 2026
 
 
    Alternate Next Hop:
-      A next hop through an IF interface that does not represent the
+      A next hop through an IFL interface that does not represent the
       shortest path through the inter fabric horizon but necessitates
       the receiving node to use the next hop on the shortest path to the
       destination fabric (direct next hop).
@@ -236,7 +236,7 @@ Internet-Draft       draft-przygienda-rift-dragonfly        January 2024
 
    Dragonfly+, being basically, when seen a single fabric, a multi-plane
    CLOS with many broken links (which we will call inter fabric planes
-   or IF planes to distinguish them from multi-plane within a fabric
+   or IFL planes to distinguish them from multi-plane within a fabric
    later) will somehow need to change the behavior of RIFT to allow
    forwarding via horizontal links at ToF level lest we end up inverting
    the fabric and force leaves to deal with transit traffic.  Moreover,
@@ -250,8 +250,8 @@ Internet-Draft       draft-przygienda-rift-dragonfly        January 2024
    ToF "multi-plane ringing".  Hence in Figure 2 instead of the first
    assumption of a single fabric we break out fabric A and fabric B and
    consider the links SA2-SB2 and SA1-SB1 as two "inter fabric DF+"
-   links, or in short, as already introduced, IF links.  And fortunately
-   enough, IF links, just like all other horizontal ToF links, are
+   links, or in short, as already introduced, IFL links.  And fortunately
+   enough, IFL links, just like all other horizontal ToF links, are
    considered northbound from both sides and northbound flooding rules
    apply, an ideal thing since with that ToFs will see full topology of
    their inter fabric plane.
@@ -260,7 +260,7 @@ Internet-Draft       draft-przygienda-rift-dragonfly        January 2024
    DF+ capability flag but a fabric ID now which has to be distinct in
    each of the CLOS.  In case of non-DF+ mode a ToF will declare such
    links miscabled, once enabled to operate in DF+ it will mark those
-   links as IF links.  Given `fabric_id` is an optional schema element a
+   links as IFL links.  Given `fabric_id` is an optional schema element a
    ToF operating in DF+ mode will reject all links to other ToFs without
    `fabric_id` value set or not indicating DF+ mode as mis-cabled to
    prevent a mixture of non-DF+ and DF+ ToFs in a setup.  On the other
@@ -277,21 +277,21 @@ Internet-Draft       draft-przygienda-rift-dragonfly        January 2024
 
 
 
-Przygienda                 Expires 4 July 2024                  [Page 5]
+Przygienda               Expires 4 October 2026                 [Page 5]
 
-Internet-Draft       draft-przygienda-rift-dragonfly        January 2024
+Internet-Draft       draft-przygienda-rift-dragonfly          April 2026
 
 
 4.  First Route Computation Change
 
-   Now that we can detect IF links reliably we can also remove those
+   Now that we can detect IFL links reliably we can also remove those
    from the computations used in negative disaggregation as first step.
    This will prevent ToFs in fabric A negatively disaggregating Fabric B
    prefixes, a desirable behavior.  Not being able to forward from
    Fabric A to fabric B is obviously a far less desirable behavior and
    hence a ToF in DF+ mode needs to extend its route computation by a
    special southbound DF+ computation where we use SPF taking in first
-   step all IF links and the nodes behind them as candidates.  This
+   step all IFL links and the nodes behind them as candidates.  This
    computation will result in a "direct inter fabric forwarding
    database" containing amongst others shortest path to prefixes in
    fabric B or in other words, direct inter fabric next hops.  Section 5
@@ -305,7 +305,7 @@ Internet-Draft       draft-przygienda-rift-dragonfly        January 2024
    bandwidth.  In our example SB1 forwarding to LA1 can take instead of
    SA1 directly a path through SC1 relying on it forwarding to SA1.  To
    support this we introduce an additional SPF computation which takes
-   in first 2 iterations only IF links and generates a "indirect inter
+   in first 2 iterations only IFL links and generates a "indirect inter
    fabric forwarding database".  Section 5 will expound further how that
    database is used.
 
@@ -333,9 +333,9 @@ Internet-Draft       draft-przygienda-rift-dragonfly        January 2024
 
 
 
-Przygienda                 Expires 4 July 2024                  [Page 6]
+Przygienda               Expires 4 October 2026                 [Page 6]
 
-Internet-Draft       draft-przygienda-rift-dragonfly        January 2024
+Internet-Draft       draft-przygienda-rift-dragonfly          April 2026
 
 
    southbound direction or an equivalent scheme.
@@ -389,9 +389,9 @@ Internet-Draft       draft-przygienda-rift-dragonfly        January 2024
 
 
 
-Przygienda                 Expires 4 July 2024                  [Page 7]
+Przygienda               Expires 4 October 2026                 [Page 7]
 
-Internet-Draft       draft-przygienda-rift-dragonfly        January 2024
+Internet-Draft       draft-przygienda-rift-dragonfly          April 2026
 
 
                  Fabric A
@@ -445,9 +445,9 @@ Internet-Draft       draft-przygienda-rift-dragonfly        January 2024
 
 
 
-Przygienda                 Expires 4 July 2024                  [Page 8]
+Przygienda               Expires 4 October 2026                 [Page 8]
 
-Internet-Draft       draft-przygienda-rift-dragonfly        January 2024
+Internet-Draft       draft-przygienda-rift-dragonfly          April 2026
 
 
       Figure 3: Multi-Plane CLOS Fabrics Connected in Sparse Dragonfly
@@ -475,10 +475,10 @@ Internet-Draft       draft-przygienda-rift-dragonfly        January 2024
 
    A special case where a plane within a remote fabric breaks down is
    not noticeable in another fabric and hence the traffic can black hole
-   since we do suppress the IF links during negative disaggregation
+   since we do suppress the IFL links during negative disaggregation
    normally.  To detect the condition reliably a ToF has to compute the
    inter fabric view of all the other ToFs in its own fabric while
-   including IF links and consider the resulting difference as "inter
+   including IFL links and consider the resulting difference as "inter
    fabric negative disaggregation".  This is possible but at scale can
    present significant computational load and is left therefore as
    optional behavior.  Additionally, even when the fabric is a single
@@ -487,7 +487,7 @@ Internet-Draft       draft-przygienda-rift-dragonfly        January 2024
    ring.
 
    The same computation will deal with an even stranger case of a double
-   failure on the IF links where a ToF becomes completely separated from
+   failure on the IFL links where a ToF becomes completely separated from
    the other fabrics.  It will detect this and initiate negative
    disaggregation for the according prefixes.
 
@@ -501,9 +501,9 @@ Internet-Draft       draft-przygienda-rift-dragonfly        January 2024
 
 
 
-Przygienda                 Expires 4 July 2024                  [Page 9]
+Przygienda               Expires 4 October 2026                 [Page 9]
 
-Internet-Draft       draft-przygienda-rift-dragonfly        January 2024
+Internet-Draft       draft-przygienda-rift-dragonfly          April 2026
 
 
 8.  Summary Overview
@@ -513,11 +513,11 @@ Internet-Draft       draft-przygienda-rift-dragonfly        January 2024
 
    We see three fabrics, each of them multi-plane (though mixes are
    absolutely possible as long the number of ToFs connected to dragonfly
-   are kept the same).  The fat links represent the "IF horizon", i.e.
+   are kept the same).  The fat links represent the "IFL horizon", i.e.
    any traffic coming from those links cannot use alternate next hops to
    the destination.  In this example traffic from LA11 going through
    PA11 and SA2 towards LC11 is given two choices of next hops, either
-   SC2 or SB2.  Now that it entered the IF horizon in case SB2 receives
+   SC2 or SB2.  Now that it entered the IFL horizon in case SB2 receives
    it no further alternate next hops will be used but traffic will be
    handed off to SC2 which applies the same rule and in this case
    actually forwards the traffic into the fabric.
@@ -557,9 +557,9 @@ Internet-Draft       draft-przygienda-rift-dragonfly        January 2024
 
 
 
-Przygienda                 Expires 4 July 2024                 [Page 10]
+Przygienda               Expires 4 October 2026                [Page 10]
 
-Internet-Draft       draft-przygienda-rift-dragonfly        January 2024
+Internet-Draft       draft-przygienda-rift-dragonfly          April 2026
 
 
    [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
@@ -569,7 +569,7 @@ Internet-Draft       draft-przygienda-rift-dragonfly        January 2024
 Author's Address
 
    Tony Przygienda (editor)
-   Juniper
+   HPE Juniper Networking
    1137 Innovation Way
    Sunnyvale, CA
    United States of America
@@ -613,4 +613,4 @@ Author's Address
 
 
 
-Przygienda                 Expires 4 July 2024                 [Page 11]
+Przygienda               Expires 4 October 2026                [Page 11]
