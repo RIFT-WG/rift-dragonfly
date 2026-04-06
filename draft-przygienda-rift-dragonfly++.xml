@@ -89,7 +89,7 @@
             <t>
                 To start with, <xref target="oneplanesparsedf" /> visualizes three simple single plane
                 fabrics interconnected via a DragonFly+ backbone. The behavior of standard RIFT is better understood
-                if we look at the homomorphic version of the same topology in <xref target="oneplanesparsedf_homo" />.
+                if we look at the homomorphic version of the same topology in <xref target="oneplanesparsedf_homo"/>.
                 We can see that it is nothing else but a multi-plane CLOS with a lot of broken links for standard
                 RIFT. The planes consist of S_x_1 and S_x_2 ToFs in each CLOS. Given this,
                 leaf LB1 should be connected to SA1 to be in the plane and since it is not, SA1 will deduct that
@@ -129,7 +129,8 @@
                 <dd>We define horizon as a concept differentiating between inter fabric links and southbound
                     pointing standard RIFT intra fabric links on a ToF. Both type of links need a different FIB
                     to support
-                    alternate next hop when routing between fabrics.
+                    alternate next hop when routing between fabrics. A link can only be on one side of the horizon
+                    but not both sides.
                 </dd>
                 <dt>Inter Fabric Planes or IFL-planes:</dt>
                 <dd>
@@ -141,7 +142,8 @@
                 </dd>
                 <dt>K-Alternate Next Hops or KNHs:</dt>
                 <dd>
-                    Next hop used by the originating fabric on a k-shortest path to the destination fabric.
+                    Next hop used by the originating fabric on a <xref target="EPPSTEIN">k-shortest path</xref>
+                     to the destination fabric.
                     The receiver on the other side must subsequently
                     use as next hop shortest path next hop to the destination fabric.
                 </dd>
@@ -223,8 +225,7 @@
                 and the nodes behind them as candidates. This computation
                 will result in a "direct inter fabric forwarding database"
                 containing amongst others shortest path to prefixes in fabric B or
-                in other words, direct inter fabric next hops. <xref  target="fwd"/> will expound
-                further how that database is used.
+                in other words, direct inter fabric next hops.
             </t>
 
             <section anchor="computation">
@@ -236,9 +237,10 @@
                 via KNHs to increase the bi-sectional
                 bandwidth. In our first simple example SB1 forwarding to LA1 can take instead
                 of SA1 directly a path through SC1 relying on it forwarding to SA1.
+                And in less dense DF+ backbones we can even encounter longer indirect paths.
                 To support this we introduce an additional SPF computation which
-                computes for each IFL interface a k-shortest-path whereas K should
-                be obviously reasonable constrained. To illustrate this by an example
+                computes for each IFL interface k-shortest-paths whereas K should
+                be obviously reasonably constrained. To illustrate this by an example
                 <xref target="sparse_17"/> introduces a 17 fabrics rather sparse dragonfly
                 mesh where a 3 hops alternate paths are viable (if so chosen). FID 0
                 forwarding to FID 2 has obviously the shortest path via FID1 but
@@ -246,10 +248,27 @@
                 3 hops k-shortest-paths. However, only the originating fabric can
                 choose a k-shortest path and every subsequent non originator MUST
                 follow equal cost shortest paths to prevent looping or excessive
-                bow-tying through the fabric. The picture does not visualize the
-                full path diversity since FID 13 can viably choose FIDs 3, 6, 9 beside
-                FID 12 as shortest path next hops providing very signficant
-                path diversity.
+                bow-tying through the fabric. Not only MUST it follow the
+                shortest path to the destination fabric, the shortest path MUST
+                be actually computed on a topology where the sender node is excluded
+                to prevent looping.
+
+                </t>
+
+                <t>
+                    For the sake of clarity <xref target="sparse_17"/> does not visualize the
+                full path diversity since, e.g. FID 13 can viably choose FIDs 3, 6, 9 beside
+                FID 12 as shortest path next hops providing very significant
+                path diversity on a 3 hops path. Further "steering" of chosen nexthops can
+                    be achieved by e.g. DSCP marking or congestion notification schemes
+                    but such approaches are outside the scope of this document.
+                    </t>
+                <t>
+
+                    Computing such alternate next hops will have the other beneficial
+                effect of actually providing a backup path in case the direct IFL plane
+                link to another fabric becomes unavailable.
+                </t>
 
 
                 <figure anchor="sparse_17">
@@ -259,12 +278,6 @@
                         <artwork align="center" name="" type="ascii-art" src="svg/missing.ascii-art"></artwork>
                     </artset>
                 </figure>
-
-            </t>
-
-                <t>Computing such alternate next hops will have the other beneficial
-                effect of actually providing a backup path in case the direct IFL plane
-                link to another fabric becomes unavailable.</t>
             </section>
 
             <section>
@@ -314,14 +327,20 @@
                 arriving traffic. Any traffic arriving at the ToF
                 that is targeted at the prefix within its fabric
                 can be forwarded without any further considerations.
-                On the other hand, traffic arriving at a inter fabric
+                On the other hand, traffic not targeted
+                at the fabric of the ToF arriving at a inter fabric
                 link MUST use a FIB generated by <xref target="computation"/>.
                 The solution will naturally
                 limit any non-shortest inter fabric path in ToF case to
-                k-shortest paths. Observe that
-                per inter face specific FIB is nothing particularly
+                shortest paths computed without including the
+                sender. As last case, traffic arriving from
+                within its own fabric but targeted at another fabric
+                can use any of the k-shortest paths as next hop as described in
+                <xref target="computation"/>.
+                Observe that
+                per interface specific FIB is nothing particularly
                 special, any technology supporting VPN or trunking
-                today is already capable of provisioning inter face
+                today is already capable of provisioning interface
                 specific forwarding behavior.
 
             </t>
@@ -393,9 +412,12 @@
                     <artwork align="center" name="" type="ascii-art" src="svg/multiplanesparedf_overview.ascii-art"></artwork>
                 </artset>
             </figure>
-        </section>
 
-
+        <t>
+            For the more complex case of alternate paths longer than 2 hops and the resulting forwarding
+            behavior and path diversity <xref target="sparse_17"/> has been described in the document.
+        </t>
+</section>
 
         <section anchor="IANA" toc="default" numbered="true">
             <name>IANA Considerations</name>
@@ -423,7 +445,18 @@
             <name>References</name>
             <references>
                 <name>Informative References</name>
+<reference anchor="EPPSTEIN">
+        <front>
+            <title>Finding the k-Shortest Paths</title>
+            <author initials="D" surname="Eppstein">
+                <organization>USC
+                </organization>
+            </author>
 
+            <date  year="1997"/>
+        </front>
+
+    </reference>
             </references>
             <references>
                 <name>Normative References</name>

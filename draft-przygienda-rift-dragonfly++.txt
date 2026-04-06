@@ -4,8 +4,8 @@
 
 Network Working Group                                 A. Przygienda, Ed.
 Internet-Draft                                    HPE Juniper Networking
-Intended status: Experimental                               2 April 2026
-Expires: 4 October 2026
+Intended status: Experimental                               6 April 2026
+Expires: 8 October 2026
 
 
                       RIFT in Dragonfly Topologies
@@ -38,7 +38,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 4 October 2026.
+   This Internet-Draft will expire on 8 October 2026.
 
 Copyright Notice
 
@@ -53,7 +53,7 @@ Copyright Notice
 
 
 
-Przygienda               Expires 4 October 2026                 [Page 1]
+Przygienda               Expires 8 October 2026                 [Page 1]
 
 Internet-Draft       draft-przygienda-rift-dragonfly          April 2026
 
@@ -70,29 +70,30 @@ Table of Contents
    4.  First Route Computation Change  . . . . . . . . . . . . . . .   6
      4.1.  Additional Bi-Sectional Bandwidth Route Computation
            Change  . . . . . . . . . . . . . . . . . . . . . . . . .   6
-     4.2.  Dragonfly with Multi-Plane CLOS Fabrics . . . . . . . . .   6
+     4.2.  Dragonfly with Multi-Plane CLOS Fabrics . . . . . . . . .   7
    5.  Forwarding Considerations . . . . . . . . . . . . . . . . . .   9
    6.  Partitioning of inter Fabric Planes . . . . . . . . . . . . .   9
-   7.  Specification . . . . . . . . . . . . . . . . . . . . . . . .   9
+   7.  Specification . . . . . . . . . . . . . . . . . . . . . . . .  10
    8.  Summary Overview  . . . . . . . . . . . . . . . . . . . . . .  10
    9.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  10
    10. Security Considerations . . . . . . . . . . . . . . . . . . .  10
-   11. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  10
-   12. References  . . . . . . . . . . . . . . . . . . . . . . . . .  10
-     12.1.  Informative References . . . . . . . . . . . . . . . . .  10
-     12.2.  Normative References . . . . . . . . . . . . . . . . . .  10
+   11. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  11
+   12. References  . . . . . . . . . . . . . . . . . . . . . . . . .  11
+     12.1.  Informative References . . . . . . . . . . . . . . . . .  11
+     12.2.  Normative References . . . . . . . . . . . . . . . . . .  11
    Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .  11
 
 1.  Introduction
 
    RIFT today is standardized to deal with CLOS variant fabrics with
    some horizontal link exceptions.  Given that interconnecting multiple
-   CLOS via a dragonfly variant is an interesting topology (whether it's
-   a full mesh or some kind of non-completely meshed regular lattice)
-   this document addresses the resulting changes necessary to base RIFT
-   specification to support dragonfly interconnected CLOS fabrics.  The
-   reader is advised that due to complexity of figures involved the
-   ASCII version of the document leaves those out.
+   CLOS via a dragonfly and its variants is an interesting topology
+   (whether it's a full mesh or some kind of non-completely meshed
+   regular lattice) this document addresses the resulting changes
+   necessary to base RIFT specification to support dragonfly
+   interconnected CLOS fabrics.  The reader is advised that due to
+   complexity of figures involved the ASCII version of the document may
+   present those in simplified fashion.
 
 
 
@@ -108,8 +109,7 @@ Table of Contents
 
 
 
-
-Przygienda               Expires 4 October 2026                 [Page 2]
+Przygienda               Expires 8 October 2026                 [Page 2]
 
 Internet-Draft       draft-przygienda-rift-dragonfly          April 2026
 
@@ -165,7 +165,7 @@ Internet-Draft       draft-przygienda-rift-dragonfly          April 2026
 
 
 
-Przygienda               Expires 4 October 2026                 [Page 3]
+Przygienda               Expires 8 October 2026                 [Page 3]
 
 Internet-Draft       draft-przygienda-rift-dragonfly          April 2026
 
@@ -206,9 +206,10 @@ Internet-Draft       draft-przygienda-rift-dragonfly          April 2026
       We define horizon as a concept differentiating between inter
       fabric links and southbound pointing standard RIFT intra fabric
       links on a ToF.  Both type of links need a different FIB to
-      support alternate next hop when routing between fabrics.
+      support alternate next hop when routing between fabrics.  A link
+      can only be on one side of the horizon but not both sides.
 
-   Inter Fabric Planes or IF-planes:
+   Inter Fabric Planes or IFL-planes:
       Multi-Plane that spans multiple fabrics.
 
    Inter Fabric link or IFL links:
@@ -220,17 +221,16 @@ Internet-Draft       draft-przygienda-rift-dragonfly          April 2026
 
 
 
-
-Przygienda               Expires 4 October 2026                 [Page 4]
+Przygienda               Expires 8 October 2026                 [Page 4]
 
 Internet-Draft       draft-przygienda-rift-dragonfly          April 2026
 
 
-   Alternate Next Hop:
-      A next hop through an IFL interface that does not represent the
-      shortest path through the inter fabric horizon but necessitates
-      the receiving node to use the next hop on the shortest path to the
-      destination fabric (direct next hop).
+   K-Alternate Next Hops or KNHs:
+      Next hop used by the originating fabric on a k-shortest path
+      [EPPSTEIN] to the destination fabric.  The receiver on the other
+      side must subsequently use as next hop shortest path next hop to
+      the destination fabric.
 
 3.  Horizontal Link Behavior at ToF Level
 
@@ -250,22 +250,23 @@ Internet-Draft       draft-przygienda-rift-dragonfly          April 2026
    ToF "multi-plane ringing".  Hence in Figure 2 instead of the first
    assumption of a single fabric we break out fabric A and fabric B and
    consider the links SA2-SB2 and SA1-SB1 as two "inter fabric DF+"
-   links, or in short, as already introduced, IFL links.  And fortunately
-   enough, IFL links, just like all other horizontal ToF links, are
-   considered northbound from both sides and northbound flooding rules
-   apply, an ideal thing since with that ToFs will see full topology of
-   their inter fabric plane.
+   links, or in short, as already introduced, IFL links.  And
+   fortunately enough, IFL links, just like all other horizontal ToF
+   links, are considered northbound from both sides and northbound
+   flooding rules apply, an ideal thing since with that ToFs will see
+   full topology of their inter fabric plane.
 
    RIFT used in such DF+ configuration will require on ToF not only a
    DF+ capability flag but a fabric ID now which has to be distinct in
-   each of the CLOS.  In case of non-DF+ mode a ToF will declare such
-   links miscabled, once enabled to operate in DF+ it will mark those
-   links as IFL links.  Given `fabric_id` is an optional schema element a
-   ToF operating in DF+ mode will reject all links to other ToFs without
-   `fabric_id` value set or not indicating DF+ mode as mis-cabled to
-   prevent a mixture of non-DF+ and DF+ ToFs in a setup.  On the other
-   hand, a ToF indicating DF+ capability and showing matching fabric id
-   is clearly a normal horizontal multi plane ring in the same fabric.
+   each of the CLOS or dragonfly cliques.  In case of non-DF+ mode a ToF
+   will declare such links miscabled, once enabled to operate in DF+ it
+   will mark those links as IFL links.  Given `fabric_id` is an optional
+   schema element a ToF operating in DF+ mode will reject all links to
+   other ToFs without `fabric_id` value set or not indicating DF+ mode
+   as mis-cabled to prevent a mixture of non-DF+ and DF+ ToFs in a
+   setup.  On the other hand, a ToF indicating DF+ capability and
+   showing matching fabric id is clearly a normal horizontal multi plane
+   ring in the same fabric.
 
 
 
@@ -276,8 +277,7 @@ Internet-Draft       draft-przygienda-rift-dragonfly          April 2026
 
 
 
-
-Przygienda               Expires 4 October 2026                 [Page 5]
+Przygienda               Expires 8 October 2026                 [Page 5]
 
 Internet-Draft       draft-przygienda-rift-dragonfly          April 2026
 
@@ -294,30 +294,57 @@ Internet-Draft       draft-przygienda-rift-dragonfly          April 2026
    step all IFL links and the nodes behind them as candidates.  This
    computation will result in a "direct inter fabric forwarding
    database" containing amongst others shortest path to prefixes in
-   fabric B or in other words, direct inter fabric next hops.  Section 5
-   will expound further how that database is used.
+   fabric B or in other words, direct inter fabric next hops.
 
 4.1.  Additional Bi-Sectional Bandwidth Route Computation Change
 
    One of the DF+ properties is that it not only provides a direct path
    to a destination but guarantees that destinations are reachable via
-   additional, alternate next hop to increase the bi-sectional
-   bandwidth.  In our example SB1 forwarding to LA1 can take instead of
-   SA1 directly a path through SC1 relying on it forwarding to SA1.  To
-   support this we introduce an additional SPF computation which takes
-   in first 2 iterations only IFL links and generates a "indirect inter
-   fabric forwarding database".  Section 5 will expound further how that
-   database is used.
+   KNHs to increase the bi-sectional bandwidth.  In our first simple
+   example SB1 forwarding to LA1 can take instead of SA1 directly a path
+   through SC1 relying on it forwarding to SA1.  And in less dense DF+
+   backbones we can even encounter longer indirect paths.  To support
+   this we introduce an additional SPF computation which computes for
+   each IFL interface k-shortest-paths whereas K should be obviously
+   reasonably constrained.  To illustrate this by an example Figure 3
+   introduces a 17 fabrics rather sparse dragonfly mesh where a 3 hops
+   alternate paths are viable (if so chosen).  FID 0 forwarding to FID 2
+   has obviously the shortest path via FID1 but a k-shortest path
+   computation will yield FID 13 and FID 16 as viable 3 hops k-shortest-
+   paths.  However, only the originating fabric can choose a k-shortest
+   path and every subsequent non originator MUST follow equal cost
+   shortest paths to prevent looping or excessive bow-tying through the
+   fabric.  Not only MUST it follow the shortest path to the destination
+   fabric, the shortest path MUST be actually computed on a topology
+   where the sender node is excluded to prevent looping.
+
+   For the sake of clarity Figure 3 does not visualize the full path
+   diversity since, e.g. FID 13 can viably choose FIDs 3, 6, 9 beside
+   FID 12 as shortest path next hops providing very significant path
+   diversity on a 3 hops path.  Further "steering" of chosen nexthops
+   can be achieved by e.g. DSCP marking or congestion notification
+   schemes but such approaches are outside the scope of this document.
 
    Computing such alternate next hops will have the other beneficial
-   effect of actually providing a backup path in case the direct IF
+   effect of actually providing a backup path in case the direct IFL
    plane link to another fabric becomes unavailable.
+
+                                missing TDB
+
+
+
+Przygienda               Expires 8 October 2026                 [Page 6]
+
+Internet-Draft       draft-przygienda-rift-dragonfly          April 2026
+
+
+      Figure 3: Multi-Plane CLOS Fabrics Connected in Sparse Dragonfly
 
 4.2.  Dragonfly with Multi-Plane CLOS Fabrics
 
    Most complex case of RIFT deployment would be a dragonfly topology of
    CLOS fabrics which are in themselves already multi-plane fabrics.  To
-   present it as homomorphic graph Figure 3 is included.  The symmetry
+   present it as homomorphic graph Figure 4 is included.  The symmetry
    is obvious, we end up with the normal RIFT ringing within the fabric,
    e.g. r_A for fabric A and then for the inter fabric planes dragonfly
    is basically the according ringing itself, here IR_1 and IR_2.
@@ -330,14 +357,6 @@ Internet-Draft       draft-przygienda-rift-dragonfly          April 2026
    provisioned is outside the specification here but it will necessitate
    basically flat distribution of the loopbacks of the ToFs across whole
    fabric via e.g. redistribution of some RIFT routes in northbound and
-
-
-
-Przygienda               Expires 4 October 2026                 [Page 6]
-
-Internet-Draft       draft-przygienda-rift-dragonfly          April 2026
-
-
    southbound direction or an equivalent scheme.
 
 
@@ -370,26 +389,7 @@ Internet-Draft       draft-przygienda-rift-dragonfly          April 2026
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Przygienda               Expires 4 October 2026                 [Page 7]
+Przygienda               Expires 8 October 2026                 [Page 7]
 
 Internet-Draft       draft-przygienda-rift-dragonfly          April 2026
 
@@ -445,31 +445,32 @@ Internet-Draft       draft-przygienda-rift-dragonfly          April 2026
 
 
 
-Przygienda               Expires 4 October 2026                 [Page 8]
+Przygienda               Expires 8 October 2026                 [Page 8]
 
 Internet-Draft       draft-przygienda-rift-dragonfly          April 2026
 
 
-      Figure 3: Multi-Plane CLOS Fabrics Connected in Sparse Dragonfly
+      Figure 4: Multi-Plane CLOS Fabrics Connected in Sparse Dragonfly
 
 5.  Forwarding Considerations
 
-   Since RIFT is being extended with the concept of "indirect inter
-   fabric next hop" and IP packets do not carry any marking as the path
-   they have taken indiscriminate forwarding using non-shortest paths at
-   ToF level may loop in inter fabric case.  To prevent this the ToFs
-   have to maintain the concept of a "split horizon" on the arriving
-   traffic.  Any traffic arriving at the ToF that is targeted at the
-   prefix within its fabric can be forwarded without any further
-   considerations.  On the other hand, traffic arriving at a inter
-   fabric link MUST use a FIB which does not contain the indirect inter
-   fabric next hops and hence the FIB used to forward traffic on the IF
-   inter faces MUST NOT include the results of indirect next hop
-   computation.  The solution will naturally limit any non-shortest
-   inter fabric path in ToF case to maximally one alternate next hop.
-   Observe that per inter face specific FIB is nothing particularly
-   special, any technology supporting VPN or trunking today is already
-   capable of provisioning inter face specific forwarding behavior.
+   Since RIFT is being extended with the concept of KNH and IP packets
+   do not carry any marking as the path they have taken indiscriminate
+   forwarding using non-shortest paths at ToF level may loop in inter
+   fabric case.  To prevent this the ToFs have to maintain the concept
+   of a "split horizon" on the arriving traffic.  Any traffic arriving
+   at the ToF that is targeted at the prefix within its fabric can be
+   forwarded without any further considerations.  On the other hand,
+   traffic not targeted at the fabric of the ToF arriving at a inter
+   fabric link MUST use a FIB generated by Section 4.1.  The solution
+   will naturally limit any non-shortest inter fabric path in ToF case
+   to shortest paths computed without including the sender.  As last
+   case, traffic arriving from within its own fabric but targeted at
+   another fabric can use any of the k-shortest paths as next hop as
+   described in Section 4.1.  Observe that per interface specific FIB is
+   nothing particularly special, any technology supporting VPN or
+   trunking today is already capable of provisioning interface specific
+   forwarding behavior.
 
 6.  Partitioning of inter Fabric Planes
 
@@ -483,13 +484,27 @@ Internet-Draft       draft-przygienda-rift-dragonfly          April 2026
    present significant computational load and is left therefore as
    optional behavior.  Additionally, even when the fabric is a single
    plane fabric it must be then ringed at ToF level since otherwise the
-   ToFs do not see the inter fabric planes they are not part of as an IF
-   ring.
+   ToFs do not see the inter fabric planes they are not part of as an
+   IFL ring.
 
    The same computation will deal with an even stranger case of a double
-   failure on the IFL links where a ToF becomes completely separated from
+   failure on the IF links where a ToF becomes completely separated from
    the other fabrics.  It will detect this and initiate negative
    disaggregation for the according prefixes.
+
+
+
+
+
+
+
+
+
+
+Przygienda               Expires 8 October 2026                 [Page 9]
+
+Internet-Draft       draft-przygienda-rift-dragonfly          April 2026
+
 
 7.  Specification
 
@@ -499,16 +514,9 @@ Internet-Draft       draft-przygienda-rift-dragonfly          April 2026
    and computations described conceptually in former chapters tightly
    specified.
 
-
-
-Przygienda               Expires 4 October 2026                 [Page 9]
-
-Internet-Draft       draft-przygienda-rift-dragonfly          April 2026
-
-
 8.  Summary Overview
 
-   A final Figure 4 is provided to map things back to the usual
+   A final Figure 5 is provided to map things back to the usual
    dragonfly sparse topology and show the concepts in action.
 
    We see three fabrics, each of them multi-plane (though mixes are
@@ -525,7 +533,11 @@ Internet-Draft       draft-przygienda-rift-dragonfly          April 2026
                       [[ Overview of the solution,
                          Refer to PDF for Picture ]]
 
-      Figure 4: Multi-Plane CLOS Fabrics Connected in Sparse Dragonfly
+      Figure 5: Multi-Plane CLOS Fabrics Connected in Sparse Dragonfly
+
+   For the more complex case of alternate paths longer than 2 hops and
+   the resulting forwarding behavior and path diversity Figure 3 has
+   been described in the document.
 
 9.  IANA Considerations
 
@@ -536,6 +548,19 @@ Internet-Draft       draft-przygienda-rift-dragonfly          April 2026
 10.  Security Considerations
 
    TBD
+
+
+
+
+
+
+
+
+
+Przygienda               Expires 8 October 2026                [Page 10]
+
+Internet-Draft       draft-przygienda-rift-dragonfly          April 2026
+
 
 11.  Acknowledgements
 
@@ -548,19 +573,14 @@ Internet-Draft       draft-przygienda-rift-dragonfly          April 2026
 
 12.1.  Informative References
 
+   [EPPSTEIN] Eppstein, D., "Finding the k-Shortest Paths", 1997.
+
 12.2.  Normative References
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
               DOI 10.17487/RFC2119, March 1997,
               <https://www.rfc-editor.org/info/rfc2119>.
-
-
-
-Przygienda               Expires 4 October 2026                [Page 10]
-
-Internet-Draft       draft-przygienda-rift-dragonfly          April 2026
-
 
    [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
               2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
@@ -593,24 +613,4 @@ Author's Address
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Przygienda               Expires 4 October 2026                [Page 11]
+Przygienda               Expires 8 October 2026                [Page 11]
