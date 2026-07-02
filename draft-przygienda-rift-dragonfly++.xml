@@ -15,14 +15,14 @@
 <?rfc inline="yes"?>
 <?rfc compact="yes"?>
 <?rfc subcompact="no"?>
-<rfc xmlns:xi="http://www.w3.org/2001/XInclude" category="exp" docName="draft-przygienda-rift-dragonfly-02" ipr="trust200902" obsoletes=""
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" category="exp" docName="draft-przygienda-rift-dragonfly-03" ipr="trust200902" obsoletes=""
      submissionType="IETF" updates="" xml:lang="en" tocInclude="true" tocDepth="3" symRefs="true" sortRefs="true" version="3">
     <!-- xml2rfc v2v3 conversion 3.9.1 -->
     <front>
-        <title abbrev="draft-przygienda-rift-dragonfly">
+        <title abbrev="draft-przygienda-rift-dragonfly-03">
             RIFT in Dragonfly Topologies
         </title>
-        <seriesInfo name="Internet-Draft" value="draft-przygienda-rift-dragonfly-02"/>
+        <seriesInfo name="Internet-Draft" value="draft-przygienda-rift-dragonfly-03"/>
         <author fullname="Tony Przygienda" initials="A." surname="Przygienda" role="editor">
             <organization>HPE Juniper Networking</organization>
             <address>
@@ -69,17 +69,24 @@
             <t>
                   RIFT today is standardized to deal with CLOS variant fabrics with some horizontal link exceptions.
                 Given that
-                interconnecting multiple CLOS via a dragonfly and its variants is an interesting topology (whether it's a full
+                interconnecting multiple CLOS via a dragonfly+ and its variants is an interesting topology (whether it's a full
                 mesh or some kind of non-completely meshed regular lattice) this document addresses the resulting
-                changes necessary to base RIFT specification to support dragonfly interconnected CLOS fabrics.
+                changes necessary to base RIFT specification to support dragonfly+ interconnected CLOS fabrics.
                 The reader is advised that due to complexity of figures involved the ASCII version of the document
                 may present those in simplified fashion.
 
                 </t>
+            <t>
+			Dragonfly+ topology is an upgraded version of Dragonfly topology. 
+			Compared to Dragonfly topology, Dragonfly+ supports hierarchical structures, 
+			which can greatly improve the scalability limitations imposed by the connectivity constraints of Dragonfly topology. 
+			Dragonfly topology is also used in some smaller-scale scenarios. 
+			This document also discusses possible changes when applying RIFT to non-CLOS Dragonfly topologies.
+			</t>
 
 
             <figure anchor="oneplanesparsedf">
-                <name>Sparse Dragonfly of CLOS Fabrics</name>
+                <name>Sparse Dragonfly+ of CLOS Fabrics</name>
                 <artset>
                     <artwork align="center" name="" type="svg" src="prep/svg/oneplanesparsedf.svg"></artwork>
                     <artwork align="center" name="" type="ascii-art" src="svg/oneplanesparsedf.ascii-art"></artwork>
@@ -104,7 +111,7 @@
             </t>
 
             <figure anchor="oneplanesparsedf_homo">
-                <name>Homomorphic View of Sparse Dragonfly as a Multi-Plane CLOS</name>
+                <name>Homomorphic View of Sparse Dragonfly+ as a Multi-Plane CLOS</name>
                 <artset>
                     <artwork align="center" name="" type="svg" src="prep/svg/oneplanesparsedf_homomorphic.svg"></artwork>
                     <artwork align="center" name="" type="ascii-art" src="svg/oneplanesparsedf_homomorphic.ascii-art"></artwork>
@@ -123,7 +130,7 @@
                     ToF that provides DF+ extensions, both in recognizing the inter fabric links and
                     computation procedures necessary to support those. The resulting combination allows
                     the use of RIFT with
-                    dragonfly topologies overall.
+                    dragonfly+ topologies overall.
                 </dd>
                 <dt>Horizon:</dt>
                 <dd>We define horizon as a concept differentiating between inter fabric links and southbound
@@ -167,7 +174,7 @@
                     to deal with new mis-cabling
                     concepts leads us to change the solution framework and consider
                     this configuration not as a single
-                    fabric but as a multi-fabric setup with dragonfly links
+                    fabric but as a multi-fabric setup with dragonfly+ links
                     building inter fabric planes now.
                     Additionally we will have to allow adjacencies on
                     ToF horizontal links
@@ -191,7 +198,7 @@
                 <t>
                     RIFT used in such DF+ configuration will require on ToF not
                     only a DF+ capability flag but a fabric ID now which has to be
-                    distinct in each of the CLOS or dragonfly cliques. In case of
+                    distinct in each of the CLOS or dragonfly+ cliques. In case of
                     non-DF+ mode a ToF will declare such links
                     miscabled, once enabled to operate in DF+
                     it will mark those links as IFL links.
@@ -241,7 +248,7 @@
                 To support this we introduce an additional SPF computation which
                 computes for each IFL interface k-shortest-paths whereas K should
                 be obviously reasonably constrained. To illustrate this by an example
-                <xref target="sparse_17"/> introduces a 17 fabrics rather sparse dragonfly
+                <xref target="sparse_17"/> introduces a 17 fabrics rather sparse dragonfly+
                 mesh where a 3 hops alternate paths are viable (if so chosen). FID 0
                 forwarding to FID 2 has obviously the shortest path via FID1 but
                 a k-shortest path computation will yield FID 13 and FID 16 as viable
@@ -272,7 +279,7 @@
 
 
                 <figure anchor="sparse_17">
-                    <name>Multi-Plane CLOS Fabrics Connected in Sparse Dragonfly</name>
+                    <name>Multi-Plane CLOS Fabrics Connected in Sparse Dragonfly+</name>
                     <artset>
                         <artwork align="center" name="" type="svg" src="prep/svg/mesh_17_every_3th_neighbor.svg"></artwork>
                         <artwork align="center" name="" type="ascii-art" src="svg/missing.ascii-art"></artwork>
@@ -281,18 +288,18 @@
             </section>
 
             <section>
-                <name>Dragonfly with Multi-Plane CLOS Fabrics</name>
+                <name>Dragonfly+ with Multi-Plane CLOS Fabrics</name>
                 <t>
                     Most complex case of RIFT deployment would be
-                    a dragonfly topology of CLOS fabrics which are in
+                    a dragonfly+ topology of CLOS fabrics which are in
                     themselves already multi-plane fabrics.
                     To present it as homomorphic graph <xref target="multiplanesparsedf_homo"/> is
                     included. The symmetry is obvious, we end up with
                     the normal RIFT ringing within the fabric, e.g. r_A for fabric A and then
-                    for the inter fabric planes dragonfly is basically the according ringing
+                    for the inter fabric planes dragonfly+ is basically the according ringing
                     itself, here IR_1 and IR_2. Observe that the northbound flooding occurring
                     on all those links will present each ToF with the full topology of the
-                    dragonfly, a necessary condition for proper disaggregation and further
+                    dragonfly+, a necessary condition for proper disaggregation and further
                     reachability computations. If the intra fabric ToF ringing should be avoided
                     a tunnel between the ToFs within a fabric are necessary and may go all the
                     way down to the leaves. How such tunnels are provisioned is outside the
@@ -303,7 +310,7 @@
                 </t>
 
                 <figure anchor="multiplanesparsedf_homo">
-                    <name>Multi-Plane CLOS Fabrics Connected in Sparse Dragonfly</name>
+                    <name>Multi-Plane CLOS Fabrics Connected in Sparse Dragonfly+</name>
                     <artset>
                         <artwork align="center" name="" type="svg" src="prep/svg/multiplanesparedf_homomorphic.svg"></artwork>
                         <artwork align="center" name="" type="ascii-art" src="svg/multiplanesparedf_homomorphic.ascii-art"></artwork>
@@ -386,17 +393,97 @@
             indication and computations described conceptually in former chapters
             tightly specified.
         </t>
+		
+		  <section numbered="true" toc="default">
+          <name>New Node capability</name>
+          <t>
+            A new optional node capability, dragonfly_topology, is added. 
+			This capability will be advertised in the LIE, along with the node's Fabric_id. 
+			In section 6.2 of <xref target="RFC9692"/>, a mismatch between a neighbor node's dragonfly_topology capability 
+			and the current node's capability does not affect normal RIFT neighbor establishment. 
+			However, if the Fabric_id in the neighbor's LIE is inconsistent with the previous one, 
+			a message notification is required, triggering a neighbor re-establishment process. 
+			All previous TIE messages sent by that neighbor need to be cleared. 
+			After the neighbor relationship is re-established, a route recalculation is triggered upon receiving the new TIE.
+          </t>
+          </section>
+		  
+		  <section numbered="true" toc="default">
+          <name>TIE extension</name>
+          <t>
+            When a node supports dragonfly_topology capability, a new Fabric_id element will be added to the transmitted TIE. 
+			This element, as a core element supporting DF topology, will be reflected in the TIE header. 
+			A check on Fabric_id will be added when determining whether the TIE is consistent with the previously received one.
+		  </t>
+
+          <t>In section 7.2 of <xref target="RFC9692"/>, a new parameter is added: Typedef i32 FabricIDType;
+             In section 7.3 of <xref target="RFC9692"/>, an optional Fabric_id element with FabricIDType is added to the Struct TIEHeader.
+          </t>
+		  
+		  <t>
+		  When the TIRE/TIDE sent by a neighbor is inconsistent with the neighbor's existing Fabric_id, 
+		  the obtained TIE cannot be used for route calculation.
+          For Spine nodes in DF+, the principle in <xref target="RFC9692"/> will be followed, 
+		  and default routes will be advertised to Leaf nodes. 
+		  Spine connections between different Fabrics are all considered East-West connections, 
+		  and following the flooding principle in <xref target="RFC9692"/>, all North TIEs will be flooded on Spine nodes.
+		  </t>
+          </section>
+		  
+		  <section numbered="true" toc="default">
+          <name>Changes to path calculation after introducing KNH</name>
+          <t>
+           When performing route calculations, a modification was made to section 6.4.1 of <xref target="RFC9692"/>.
+		  </t>
+
+          <t>
+		  Because the Spine node no longer needs to perform negative aggregation and announce unreachable routes to the Leaf node; 
+		  the Leaf node calculates routes based on the received South TIE.
+		  </t>
+
+          <t>
+		  On the Spine node, in addition to calculating the shortest next hop to the destination, 
+		  it also needs to calculate the non-shortest next hop, assuming it's within the range of K. 
+		  Taking the example from section 4.1, suppose a Spine node located at FID0 needs to calculate the path to the destination FID2. 
+		  Besides the calculated shortest path, the FID0 Spine node, using itself as the root, 
+		  finds its neighboring next-hop Spine nodes located in other Fabrics for non-shortest paths, 
+		  such as Spine nodes from FID3 to FID16. 
+		  Simultaneously, K is subtracted by 1. 
+		  Then, using Spine nodes from FID3 to FID16 as roots, it finds their neighbors located in Fabrics 
+		  other than the originating Fabric (FID0), subtracting K by 1 again. 
+		  This process is repeated. When K=1, the considered Spine node must have a direct connection to the destination Fabric,
+		  which in this case is a direct connection to FID2. 
+		  If this condition is met, the originating Fabric (FID0 Spine node) will be able to calculate a next hop 
+		  that satisfies the above conditions and add it to the non-shortest path next hop list. 
+		  In this example, this could be Spine nodes located at FID13 and FID16 connected to the originating Spine.
+		  </t>
+
+          <t>
+		  Spine nodes record the entire path during computation. 
+		  If a Spine node from the same Fabric appears along the entire path, it's considered a loop, 
+		  and such a next hop cannot be used as the next hop for a non-shortest path.
+		  </t>
+
+          <t>
+		  The K value needs to be consistent across the entire topology.
+		  And it's important to note that the value of K needs to be within a reasonable range. 
+		  Setting it too small may result in too few available next hops for non-shortest paths, 
+		  failing to meet requirements; conversely, setting K too large will lead to significant computational 
+		  overhead and potentially more loops in the event of link failures.
+          </t>
+          </section>
+		
         </section>
 
         <section numbered="true" toc="default">
             <name>Summary Overview</name>
             <t>
                 A final <xref target="overview"/> is provided to map things back to the usual
-                dragonfly sparse topology and show the concepts in action.
-</t>
+                dragonfly+ sparse topology and show the concepts in action.
+            </t>
             <t>
                 We see three fabrics, each of them multi-plane (though mixes are absolutely possible as long
-                the number of ToFs connected to dragonfly are kept the same). The fat links represent the "IFL horizon", i.e.
+                the number of ToFs connected to dragonfly+ are kept the same). The fat links represent the "IFL horizon", i.e.
                 any traffic coming from those links cannot use alternate next hops to the destination. In this
                 example traffic from LA11 going through PA11 and SA2 towards LC11 is given two choices of next hops,
                 either SC2 or SB2. Now that it entered the IFL horizon in case SB2 receives it no further alternate
@@ -406,7 +493,7 @@
 
 
             <figure anchor="overview">
-                <name>Multi-Plane CLOS Fabrics Connected in Sparse Dragonfly</name>
+                <name>Multi-Plane CLOS Fabrics Connected in Sparse Dragonfly+</name>
                 <artset>
                     <artwork align="center" name="" type="svg" src="prep/svg/multiplanesparedf_overview.svg"></artwork>
                     <artwork align="center" name="" type="ascii-art" src="svg/multiplanesparedf_overview.ascii-art"></artwork>
@@ -417,9 +504,57 @@
             For the more complex case of alternate paths longer than 2 hops and the resulting forwarding
             behavior and path diversity <xref target="sparse_17"/> has been described in the document.
         </t>
-</section>
+        </section>
 
-        <section anchor="IANA" toc="default" numbered="true">
+        <section anchor="DF" toc="default" numbered="true">
+           <name>RIFT extensions for dragonfly topology</name>
+           <figure anchor="DF-topo" title="Dragonfly">
+           <artwork><![CDATA[
+    +-----+     +-----+     +-----+
+    | SA1 |-----| SB1 |     | SC1 |--+
+    +--+--+     +--+--+     +--+--+  |
+       |           |           |     |
+    +--+--+     +--+--+     +--+--+  |
+    | SA2 |     | SB2 |-----| SC2 |  |
+    +--+--+     +-----+     +-----+  |
+       |                             |
+       +-----------------------------+
+          ]]></artwork></figure>
+			
+			<t><xref target="DF-topo"/> is a simplified diagram of the Dragonfly topology.
+            Only 3 Fabrics are shown, with only 2 switches in each Fabric.			
+			SA1 and SA2 belong to Fabric1, SB1 and SB2, and SC1 and SC2 belong to Fabric2 and Fabric3 respectively. 
+			SX1 (X refers to A/B/C) and SX2 connect to other Fabrics respectively.</t>
+			
+            <t>In the Dragonfly topology, switches are both Leaf and Spine switches, 
+			unlike in the Dragonfly+ topology where switches are either Leaf or Spine switches. 
+			Switches within the same Fabric are fully interconnected. 
+			However, similar to the Dragonfly+ topology, in the Dragonfly topology, 
+			switches within a Fabric are connected to switches in other Fabrics, 
+			and all routes within the Fabric can be reached with varying hop counts.</t>
+			
+			<t>Therefore, compared to the Dragonfly+ topology, the route advertisement in Dragonfly is slightly different. 
+			Each switch will set the "leaf_only_and_leaf_2_leaf_procedures" flag. 
+			Based on this flag, all switches will generate North TIEs and participate in northbound flooding. 
+			The generated North TIEs contain link information between the switch and other nodes in this Fabric, 
+			as well as the routing prefix of the node; because there are no southbound nodes, no South TIEs will be generated. 
+			Connections with other Fabrics will be considered as northbound connections or ToF East-West connections, 
+			and all North TIEs will be flooded.</t>
+
+            <t>Because the switches in each Fabric are connected to other Fabrics, 
+			according to the North TIE flooding principles defined in section 6.3.4 <xref target="RFC9692"/>, 
+			these North TIEs will be flooded in all Fabrics. 
+			Due to the characteristics of the DF topology, all North TIEs will be flooded on all links. 
+			This will incur some processing overhead, but because the scale of DF deployments is usually limited, 
+			this overhead can be considered tolerable.</t>
+			
+			<t>Regarding path calculation, the path calculation principles applicable to Dragonfly+ also apply to Dragonfly. 
+			Because it involves a large number of non-shortest path calculations, 
+			path calculation must be based on the KNH path calculation principles.</t>
+        </section>
+		
+		
+		<section anchor="IANA" toc="default" numbered="true">
             <name>IANA Considerations</name>
             <t>This document requests allocation for the following RIFT codepoints.</t>
             <t>TBD</t>
@@ -462,6 +597,7 @@
                 <name>Normative References</name>
                 <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.2119.xml"/>
                 <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8174.xml"/>
+				<xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9692.xml"/>
             </references>
         </references>
     </back>
